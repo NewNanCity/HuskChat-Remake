@@ -20,9 +20,13 @@
 package net.william278.huskchat.user;
 
 import net.kyori.adventure.audience.Audience;
+import net.william278.huskchat.event.PlayerLocationChangeEvent;
+import net.william278.huskchat.event.PlayerStatusChangeEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class TestOnlineUser extends OnlineUser {
@@ -60,5 +64,166 @@ public class TestOnlineUser extends OnlineUser {
     @Override
     public Audience getAudience() {
         return Audience.empty();
+    }
+
+    // ========== PlayerInfo 接口实现 / PlayerInfo interface implementation ==========
+
+    @Override
+    public double getHealth() {
+        return 20.0;
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 20.0;
+    }
+
+    @Override
+    public int getFoodLevel() {
+        return 20;
+    }
+
+    @Override
+    public int getExperienceLevel() {
+        return 0;
+    }
+
+    @Override
+    @NotNull
+    public PlayerLocationChangeEvent.PlayerLocation getLocation() {
+        return new PlayerLocationChangeEvent.PlayerLocation() {
+            @Override
+            @NotNull
+            public String getServer() {
+                return TEST_PLAYER_SERVER;
+            }
+
+            @Override
+            @NotNull
+            public String getWorld() {
+                return "test_world";
+            }
+
+            @Override
+            public double getX() {
+                return 0;
+            }
+
+            @Override
+            public double getY() {
+                return 64;
+            }
+
+            @Override
+            public double getZ() {
+                return 0;
+            }
+
+            @Override
+            public float getYaw() {
+                return 0;
+            }
+
+            @Override
+            public float getPitch() {
+                return 0;
+            }
+        };
+    }
+
+    @Override
+    @NotNull
+    public GameMode getGameMode() {
+        return GameMode.SURVIVAL;
+    }
+
+    @Override
+    public boolean isOnline() {
+        return true;
+    }
+
+    @Override
+    public boolean isSneaking() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlying() {
+        return false;
+    }
+
+    @Override
+    public boolean isVanished() {
+        return false;
+    }
+
+    @Override
+    public boolean isMuted() {
+        return false;
+    }
+
+    @Override
+    public boolean isInCombat() {
+        return false;
+    }
+
+    @Override
+    public boolean isAway() {
+        return false;
+    }
+
+    @Override
+    @NotNull
+    public Optional<Object> getStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType) {
+        return Optional.empty();
+    }
+
+    @Override
+    @NotNull
+    public Map<PlayerStatusChangeEvent.StatusType, Object> getAllStatuses() {
+        return Map.of();
+    }
+
+    @Override
+    @Nullable
+    public String getIpAddress() {
+        return "127.0.0.1";
+    }
+
+    @Override
+    @Nullable
+    public String getClientBrand() {
+        return "test";
+    }
+
+    @Override
+    public int getProtocolVersion() {
+        return 0;
+    }
+
+    @Override
+    @Nullable
+    public String getLocale() {
+        return "en_US";
+    }
+
+    @Override
+    public long getFirstJoinTime() {
+        return 0;
+    }
+
+    @Override
+    public long getLastLoginTime() {
+        return System.currentTimeMillis();
+    }
+
+    @Override
+    public long getSessionTime() {
+        return 0;
+    }
+
+    @Override
+    public long getTotalOnlineTime() {
+        return 0;
     }
 }

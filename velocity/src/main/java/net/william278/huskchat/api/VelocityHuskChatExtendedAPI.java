@@ -50,7 +50,7 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
         super(plugin);
         this.plugin = plugin;
         this.proxyServer = plugin.getProxyServer();
-        
+
         // 注册插件消息通道
         registerPluginMessageChannels();
     }
@@ -68,10 +68,10 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
     protected void updatePlayerStatusInternal(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType, @NotNull Object newValue, long duration) {
         if (player instanceof VelocityUser velocityUser) {
             velocityUser.updateStatus(statusType, newValue);
-            
+
             // 广播状态变化到所有后端服务器
             broadcastStatusUpdate(player, statusType, newValue, "API call");
-            
+
             // 如果是临时状态，设置定时器
             if (duration > 0) {
                 plugin.getScheduler().buildTask(plugin, () -> {
@@ -87,7 +87,7 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
     @Override
     protected boolean shouldRestrictChatOnLowHealth(@NotNull String channelId) {
         // 在代理服务器环境中，限制策略可能来自配置
-        return plugin.getSettings().getChannels().getChannel(channelId)
+        return plugin.getChannels().getChannel(channelId)
                 .map(channel -> {
                     // 检查频道是否配置了生命值限制
                     return false; // 默认不限制
@@ -98,7 +98,7 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
     @Override
     protected boolean shouldRestrictChatInCombat(@NotNull String channelId) {
         // 在代理服务器环境中，限制策略可能来自配置
-        return plugin.getSettings().getChannels().getChannel(channelId)
+        return plugin.getChannels().getChannel(channelId)
                 .map(channel -> {
                     // 检查频道是否配置了战斗限制
                     return false; // 默认不限制
@@ -115,11 +115,11 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
      * @param value 状态值 / status value
      * @param reason 原因 / reason
      */
-    private void broadcastStatusUpdate(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType, 
+    private void broadcastStatusUpdate(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType,
                                      Object value, @NotNull String reason) {
         PlayerStatusMessage message = PlayerStatusMessage.createStatusUpdate(
-            player.getUuid(), player.getUsername(), player.getServerName(), statusType, value, reason);
-        
+            player.getUuid(), player.getName(), player.getServerName(), statusType, value, reason);
+
         // 发送到所有后端服务器
         for (RegisteredServer server : proxyServer.getAllServers()) {
             sendPlayerStatusMessage(server, message);
@@ -150,16 +150,16 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
      * @param message 消息 / message
      */
     public void handlePlayerStatusMessage(@NotNull String serverName, @NotNull PlayerStatusMessage message) {
-        Optional<OnlineUser> playerOpt = getOnlineUsers().stream()
+        Optional<OnlineUser> playerOpt = plugin.getOnlinePlayers().stream()
                 .filter(user -> user.getUuid().equals(message.getPlayerUuid()))
                 .findFirst();
-        
+
         if (playerOpt.isEmpty()) {
             return;
         }
-        
+
         OnlineUser player = playerOpt.get();
-        
+
         switch (message.getMessageType()) {
             case STATUS_UPDATE -> handleStatusUpdate(player, message);
             case HEALTH_CHANGE -> handleHealthChange(player, message);
@@ -174,16 +174,16 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
         String statusTypeKey = message.getData("status_type", String.class);
         Object value = message.getData("value");
         String reason = message.getData("reason", String.class);
-        
+
         if (statusTypeKey != null && value != null && reason != null) {
             try {
                 PlayerStatusChangeEvent.StatusType statusType = PlayerStatusChangeEvent.StatusType.fromKey(statusTypeKey);
-                
+
                 // 更新本地缓存
                 if (player instanceof VelocityUser velocityUser) {
                     Object previousValue = velocityUser.getStatus(statusType).orElse(null);
                     velocityUser.updateStatus(statusType, value);
-                    
+
                     // 触发事件
                     plugin.firePlayerStatusChangeEvent(player, statusType, previousValue, value, reason, -1);
                 }
@@ -198,51 +198,56 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
         Double newHealth = message.getData("new_health", Double.class);
         Double maxHealth = message.getData("max_health", Double.class);
         String reason = message.getData("reason", String.class);
-        
+
         if (previousHealth != null && newHealth != null && maxHealth != null && reason != null) {
             // 更新健康状态缓存
             if (player instanceof VelocityUser velocityUser) {
                 velocityUser.updateStatus(PlayerStatusChangeEvent.StatusType.HEALTH, newHealth);
                 velocityUser.updateStatus(PlayerStatusChangeEvent.StatusType.MAX_HEALTH, maxHealth);
             }
-            
+
             // 触发生命值变化事件
-            plugin.firePlayerHealthChangeEvent(player, previousHealth, newHealth, maxHealth, reason, null);
+            plugin.firePlayerHealthChangeEvent(player, previousHealth, newHealth, maxHealth,
+                net.william278.huskchat.event.PlayerHealthChangeEvent.HealthChangeReason.OTHER, null);
         }
     }
 
     private void handleLocationChange(@NotNull OnlineUser player, @NotNull PlayerStatusMessage message) {
         // 处理位置变化
         Map<String, Object> locationData = message.getData();
-        
+
         // 触发位置变化事件
         // 这里需要根据具体的位置数据格式来实现
-        plugin.log(java.util.logging.Level.INFO, "Player " + player.getUsername() + " location changed on server " + message.getServerName());
+        plugin.log(java.util.logging.Level.INFO, "Player " + player.getName() + " location changed on server " + message.getServerName());
     }
 
     private void handlePlayerDeath(@NotNull OnlineUser player, @NotNull PlayerStatusMessage message) {
         // 处理玩家死亡
         String deathMessage = message.getData("death_message", String.class);
         String killerName = message.getData("killer", String.class);
-        
+
         OnlineUser killer = null;
         if (killerName != null) {
-            killer = getOnlineUsers().stream()
-                    .filter(user -> user.getUsername().equals(killerName))
+            killer = plugin.getOnlinePlayers().stream()
+                    .filter(user -> user.getName().equals(killerName))
                     .findFirst()
                     .orElse(null);
         }
-        
-        // 触发死亡事件
-        plugin.firePlayerDeathEvent(player, killer, deathMessage != null ? deathMessage : "Player died");
+
+        // 触发死亡事件 - 需要提供完整的参数
+        plugin.firePlayerDeathEvent(player, deathMessage != null ? deathMessage : "Player died",
+            net.william278.huskchat.event.PlayerDeathEvent.DeathCause.OTHER, killer,
+            net.william278.huskchat.user.VelocityPlayerLocation.from("unknown", "unknown", 0.0, 0.0, 0.0, 0.0f, 0.0f));
     }
 
     private void handlePlayerRespawn(@NotNull OnlineUser player, @NotNull PlayerStatusMessage message) {
         // 处理玩家重生
         String respawnReason = message.getData("reason", String.class);
-        
-        // 触发重生事件
-        plugin.firePlayerRespawnEvent(player, respawnReason != null ? respawnReason : "Player respawned");
+
+        // 触发重生事件 - 需要提供完整的参数
+        plugin.firePlayerRespawnEvent(player,
+            net.william278.huskchat.user.VelocityPlayerLocation.from("unknown", "unknown", 0.0, 0.0, 0.0, 0.0f, 0.0f),
+            net.william278.huskchat.event.PlayerRespawnEvent.RespawnReason.NORMAL);
     }
 
     private void handleSyncResponse(@NotNull OnlineUser player, @NotNull PlayerStatusMessage message) {
@@ -264,20 +269,20 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
         if (!(player instanceof VelocityUser)) {
             return CompletableFuture.completedFuture(false);
         }
-        
+
         Player velocityPlayer = ((VelocityUser) player).getPlayer();
         Optional<RegisteredServer> currentServer = velocityPlayer.getCurrentServer()
                 .map(connection -> connection.getServer());
-        
+
         if (currentServer.isEmpty()) {
             return CompletableFuture.completedFuture(false);
         }
-        
+
         PlayerStatusMessage syncRequest = PlayerStatusMessage.createSyncRequest(
-            player.getUuid(), player.getUsername(), currentServer.get().getServerInfo().getName());
-        
+            player.getUuid(), player.getName(), currentServer.get().getServerInfo().getName());
+
         sendPlayerStatusMessage(currentServer.get(), syncRequest);
-        
+
         return CompletableFuture.completedFuture(true);
     }
 
@@ -290,10 +295,9 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
      * @return 附近的玩家列表 / nearby players list
      */
     @NotNull
-    @Override
     public List<OnlineUser> getNearbyPlayers(@NotNull OnlineUser player, double radius) {
         // 在代理服务器环境中，只能返回同一服务器的玩家
-        return getOnlineUsers().stream()
+        return plugin.getOnlinePlayers().stream()
                 .filter(other -> !other.getUuid().equals(player.getUuid()))
                 .filter(other -> other.getServerName().equals(player.getServerName()))
                 .collect(Collectors.toList());
@@ -307,7 +311,6 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
      * @param player2 玩家2 / player 2
      * @return 是否在同一区域 / whether in same region
      */
-    @Override
     public boolean arePlayersInSameRegion(@NotNull OnlineUser player1, @NotNull OnlineUser player2) {
         // 在代理服务器环境中，同一服务器视为同一区域
         return player1.getServerName().equals(player2.getServerName());
@@ -322,7 +325,6 @@ public class VelocityHuskChatExtendedAPI extends HuskChatExtendedAPI {
      * @return 临时频道ID / temporary channel ID
      */
     @NotNull
-    @Override
     public String createLocationBasedChannel(@NotNull OnlineUser player, double radius) {
         // 在代理服务器环境中，基于服务器创建频道
         return "server_" + player.getServerName() + "_" + (int) radius;

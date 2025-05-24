@@ -22,6 +22,7 @@ package net.william278.huskchat.api;
 import net.william278.huskchat.BukkitHuskChat;
 import net.william278.huskchat.event.*;
 import net.william278.huskchat.user.BukkitUser;
+import net.william278.huskchat.user.OnlineUser;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -178,7 +179,7 @@ public class BukkitHuskChatExtendedAPI extends HuskChatExtendedAPI {
     @Override
     protected boolean shouldRestrictChatOnLowHealth(@NotNull String channelId) {
         // 可以从配置文件读取
-        return ((BukkitHuskChat) plugin).getSettings().getChannels().getChannel(channelId)
+        return ((BukkitHuskChat) plugin).getChannels().getChannel(channelId)
                 .map(channel -> {
                     // 检查频道是否配置了生命值限制
                     // 这里可以扩展配置系统来支持这个功能
@@ -190,7 +191,7 @@ public class BukkitHuskChatExtendedAPI extends HuskChatExtendedAPI {
     @Override
     protected boolean shouldRestrictChatInCombat(@NotNull String channelId) {
         // 可以从配置文件读取
-        return ((BukkitHuskChat) plugin).getSettings().getChannels().getChannel(channelId)
+        return ((BukkitHuskChat) plugin).getChannels().getChannel(channelId)
                 .map(channel -> {
                     // 检查频道是否配置了战斗限制
                     // 这里可以扩展配置系统来支持这个功能

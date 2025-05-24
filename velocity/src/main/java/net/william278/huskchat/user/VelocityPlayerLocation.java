@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * Velocity implementation of PlayerLocation for proxy environment
  */
 public class VelocityPlayerLocation implements PlayerLocationChangeEvent.PlayerLocation {
-    
+
     private final String server;
     private final String world;
     private final double x;
@@ -35,7 +35,7 @@ public class VelocityPlayerLocation implements PlayerLocationChangeEvent.PlayerL
     private final float yaw;
     private final float pitch;
 
-    private VelocityPlayerLocation(@NotNull String server, @NotNull String world, 
+    private VelocityPlayerLocation(@NotNull String server, @NotNull String world,
                                   double x, double y, double z, float yaw, float pitch) {
         this.server = server;
         this.world = world;
@@ -122,13 +122,12 @@ public class VelocityPlayerLocation implements PlayerLocationChangeEvent.PlayerL
         return server + ":" + world;
     }
 
-    @Override
     public double distanceTo(@NotNull PlayerLocationChangeEvent.PlayerLocation other) {
         // In proxy environment, distance calculation is limited
         if (!getRegionId().equals(other.getRegionId())) {
             return Double.MAX_VALUE; // Different servers/worlds
         }
-        
+
         // Calculate 3D distance if coordinates are available
         double dx = x - other.getX();
         double dy = y - other.getY();
@@ -136,12 +135,10 @@ public class VelocityPlayerLocation implements PlayerLocationChangeEvent.PlayerL
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    @Override
     public boolean isSameWorld(@NotNull PlayerLocationChangeEvent.PlayerLocation other) {
         return server.equals(other.getServer()) && world.equals(other.getWorld());
     }
 
-    @Override
     public boolean isSameServer(@NotNull PlayerLocationChangeEvent.PlayerLocation other) {
         return server.equals(other.getServer());
     }
@@ -156,7 +153,7 @@ public class VelocityPlayerLocation implements PlayerLocationChangeEvent.PlayerL
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof VelocityPlayerLocation other)) return false;
-        
+
         return server.equals(other.server) &&
                world.equals(other.world) &&
                Double.compare(other.x, x) == 0 &&

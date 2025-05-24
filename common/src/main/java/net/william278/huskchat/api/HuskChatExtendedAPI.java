@@ -25,6 +25,7 @@ import net.william278.huskchat.event.*;
 import net.william278.huskchat.message.ChatMessage;
 import net.william278.huskchat.message.PrivateMessage;
 import net.william278.huskchat.user.OnlineUser;
+import net.william278.huskchat.user.PlayerInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +56,16 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
             throw new IllegalStateException("Extended API not initialized. Make sure you're using HuskChat Remake.");
         }
         return (HuskChatExtendedAPI) instance;
+    }
+
+    /**
+     * 设置扩展API实例
+     * Set the extended API instance
+     *
+     * @param extendedAPI 扩展API实例 / extended API instance
+     */
+    public static void setInstance(@NotNull HuskChatExtendedAPI extendedAPI) {
+        instance = extendedAPI;
     }
 
     // ========== 频道管理 API / Channel Management API ==========
@@ -133,16 +144,16 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
     // ========== 消息发送 API / Message Sending API ==========
 
     /**
-     * 发送私聊消息
-     * Send private message
+     * 发送私聊消息（异步版本）
+     * Send private message (async version)
      *
      * @param sender 发送者 / sender
      * @param recipients 接收者列表 / recipient list
      * @param message 消息内容 / message content
      * @return 发送结果 / send result
      */
-    public CompletableFuture<Boolean> sendPrivateMessage(@NotNull OnlineUser sender, @NotNull List<String> recipients,
-                                                        @NotNull String message) {
+    public CompletableFuture<Boolean> sendPrivateMessageAsync(@NotNull OnlineUser sender, @NotNull List<String> recipients,
+                                                             @NotNull String message) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 new PrivateMessage(sender, recipients, message, plugin).dispatch();
@@ -323,13 +334,13 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
                         if (args.length >= 2) {
                             String recipient = args[0];
                             String message = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
-                            yield sendPrivateMessage(player, List.of(recipient), message).join();
+                            yield sendPrivateMessageAsync(player, List.of(recipient), message).join();
                         }
                         yield false;
                     }
                     default -> {
                         // 其他命令的默认处理
-                        plugin.log(java.util.logging.Level.INFO, "Executed command: " + command + " by " + player.getUsername());
+                        plugin.log(java.util.logging.Level.INFO, "Executed command: " + command + " by " + player.getName());
                         yield true;
                     }
                 };

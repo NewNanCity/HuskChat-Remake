@@ -281,6 +281,52 @@ public class VelocityHuskChat implements HuskChat, VelocityEventProvider {
         return this;
     }
 
+    /**
+     * 获取Gson实例
+     * Get Gson instance
+     *
+     * @return Gson实例 / Gson instance
+     */
+    @NotNull
+    public com.google.gson.Gson getGson() {
+        return new com.google.gson.Gson();
+    }
+
+    /**
+     * 获取调度器
+     * Get scheduler
+     *
+     * @return 调度器 / scheduler
+     */
+    @NotNull
+    public com.velocitypowered.api.scheduler.Scheduler getScheduler() {
+        return server.getScheduler();
+    }
+
+    /**
+     * 获取插件消息标识符
+     * Get plugin message identifier
+     *
+     * @param channel 频道名称 / channel name
+     * @return 插件消息标识符 / plugin message identifier
+     */
+    @NotNull
+    public com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier getPluginMessageIdentifier(@NotNull String channel) {
+        return com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier.from("huskchat:" + channel);
+    }
+
+    /**
+     * 获取服务器名称
+     * Get server name
+     *
+     * @return 服务器名称 / server name
+     */
+    @NotNull
+    public String getServerName() {
+        // 对于代理服务器，返回代理服务器名称
+        return getSettings().getServerNameReplacement().getOrDefault("velocity-proxy", "velocity-proxy");
+    }
+
     private void registerExtendedAPI() {
         // Register Extended API
         net.william278.huskchat.api.VelocityHuskChatExtendedAPI extendedAPI =

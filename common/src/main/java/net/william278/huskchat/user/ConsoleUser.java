@@ -21,9 +21,13 @@ package net.william278.huskchat.user;
 
 import net.kyori.adventure.audience.Audience;
 import net.william278.huskchat.HuskChat;
+import net.william278.huskchat.event.PlayerLocationChangeEvent;
+import net.william278.huskchat.event.PlayerStatusChangeEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ConsoleUser extends OnlineUser {
@@ -91,6 +95,167 @@ public class ConsoleUser extends OnlineUser {
      */
     public static boolean isConsolePlayer(@NotNull String username) {
         return username.equalsIgnoreCase(CONSOLE_USERNAME);
+    }
+
+    // ========== PlayerInfo 接口实现 / PlayerInfo interface implementation ==========
+
+    @Override
+    public double getHealth() {
+        return 20.0; // 控制台用户总是满血
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 20.0;
+    }
+
+    @Override
+    public int getFoodLevel() {
+        return 20; // 控制台用户总是满饱食度
+    }
+
+    @Override
+    public int getExperienceLevel() {
+        return 0;
+    }
+
+    @Override
+    @NotNull
+    public PlayerLocationChangeEvent.PlayerLocation getLocation() {
+        return new PlayerLocationChangeEvent.PlayerLocation() {
+            @Override
+            @NotNull
+            public String getServer() {
+                return "console";
+            }
+
+            @Override
+            @NotNull
+            public String getWorld() {
+                return "console";
+            }
+
+            @Override
+            public double getX() {
+                return 0;
+            }
+
+            @Override
+            public double getY() {
+                return 0;
+            }
+
+            @Override
+            public double getZ() {
+                return 0;
+            }
+
+            @Override
+            public float getYaw() {
+                return 0;
+            }
+
+            @Override
+            public float getPitch() {
+                return 0;
+            }
+        };
+    }
+
+    @Override
+    @NotNull
+    public GameMode getGameMode() {
+        return GameMode.CREATIVE; // 控制台用户默认创造模式
+    }
+
+    @Override
+    public boolean isOnline() {
+        return true; // 控制台总是在线
+    }
+
+    @Override
+    public boolean isSneaking() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlying() {
+        return false;
+    }
+
+    @Override
+    public boolean isVanished() {
+        return false;
+    }
+
+    @Override
+    public boolean isMuted() {
+        return false; // 控制台不能被禁言
+    }
+
+    @Override
+    public boolean isInCombat() {
+        return false;
+    }
+
+    @Override
+    public boolean isAway() {
+        return false; // 控制台不会离开
+    }
+
+    @Override
+    @NotNull
+    public Optional<Object> getStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType) {
+        return Optional.empty(); // 控制台用户没有特殊状态
+    }
+
+    @Override
+    @NotNull
+    public Map<PlayerStatusChangeEvent.StatusType, Object> getAllStatuses() {
+        return Map.of(); // 控制台用户没有状态
+    }
+
+    @Override
+    @Nullable
+    public String getIpAddress() {
+        return "127.0.0.1"; // 本地地址
+    }
+
+    @Override
+    @Nullable
+    public String getClientBrand() {
+        return "Console";
+    }
+
+    @Override
+    public int getProtocolVersion() {
+        return 0;
+    }
+
+    @Override
+    @Nullable
+    public String getLocale() {
+        return "en_US";
+    }
+
+    @Override
+    public long getFirstJoinTime() {
+        return 0; // 控制台没有首次加入时间
+    }
+
+    @Override
+    public long getLastLoginTime() {
+        return System.currentTimeMillis();
+    }
+
+    @Override
+    public long getSessionTime() {
+        return 0; // 控制台没有会话时间概念
+    }
+
+    @Override
+    public long getTotalOnlineTime() {
+        return 0; // 控制台没有在线时间概念
     }
 
 }

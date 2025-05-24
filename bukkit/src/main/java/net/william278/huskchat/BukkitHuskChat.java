@@ -49,6 +49,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import space.arim.morepaperlib.MorePaperLib;
+import com.google.gson.Gson;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -76,6 +77,7 @@ public class BukkitHuskChat extends JavaPlugin implements HuskChat, BukkitEventP
     @Getter(AccessLevel.NONE)
     private DiscordHook discordHook;
     private DataGetter dataGetter;
+    private final Gson gson = new Gson();
 
     @Override
     public void onEnable() {
@@ -235,6 +237,30 @@ public class BukkitHuskChat extends JavaPlugin implements HuskChat, BukkitEventP
     private void registerPluginMessageChannels() {
         // 注册插件消息通道
         getServer().getMessenger().registerOutgoingPluginChannel(this, "huskchat:player_status");
+    }
+
+    /**
+     * 获取服务器名称
+     * Get server name
+     *
+     * @return 服务器名称 / server name
+     */
+    @NotNull
+    public String getServerName() {
+        // 使用服务器名称替换映射，如果没有配置则使用默认名称
+        String defaultName = getServer().getName() + "-server";
+        return getSettings().getServerNameReplacement().getOrDefault(defaultName, defaultName);
+    }
+
+    /**
+     * 获取Gson实例
+     * Get Gson instance
+     *
+     * @return Gson实例 / Gson instance
+     */
+    @NotNull
+    public Gson getGson() {
+        return gson;
     }
 
 }

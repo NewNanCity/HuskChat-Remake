@@ -101,52 +101,97 @@ public interface PlayerStatusChangeEvent extends EventBase {
          * 离开状态 / Away status
          */
         AWAY("away", Boolean.class),
-        
+
         /**
          * 战斗模式 / Combat mode
          */
         COMBAT("combat", Boolean.class),
-        
+
         /**
          * 潜行状态 / Sneaking status
          */
         SNEAKING("sneaking", Boolean.class),
-        
+
         /**
          * 飞行状态 / Flying status
          */
         FLYING("flying", Boolean.class),
-        
+
         /**
          * 游戏模式 / Game mode
          */
         GAME_MODE("gamemode", String.class),
-        
+
         /**
          * 饥饿值 / Food level
          */
         FOOD_LEVEL("food", Integer.class),
-        
+
         /**
          * 经验等级 / Experience level
          */
         EXPERIENCE_LEVEL("exp_level", Integer.class),
-        
+
         /**
          * 禁言状态 / Muted status
          */
         MUTED("muted", Boolean.class),
-        
+
         /**
          * 忙碌状态 / Busy status
          */
         BUSY("busy", Boolean.class),
-        
+
         /**
          * 隐身状态 / Vanished status
          */
         VANISHED("vanished", Boolean.class),
-        
+
+        /**
+         * 生命值 / Health
+         */
+        HEALTH("health", Double.class),
+
+        /**
+         * 最大生命值 / Max health
+         */
+        MAX_HEALTH("max_health", Double.class),
+
+        /**
+         * 世界名称 / World name
+         */
+        WORLD("world", String.class),
+
+        /**
+         * 服务器名称 / Server name
+         */
+        SERVER("server", String.class),
+
+        /**
+         * 延迟 / Ping
+         */
+        PING("ping", Integer.class),
+
+        /**
+         * 客户端品牌 / Client brand
+         */
+        CLIENT_BRAND("client_brand", String.class),
+
+        /**
+         * 首次加入时间 / First join time
+         */
+        FIRST_JOIN_TIME("first_join_time", Long.class),
+
+        /**
+         * 最后登录时间 / Last login time
+         */
+        LAST_LOGIN_TIME("last_login_time", Long.class),
+
+        /**
+         * 总在线时间 / Total online time
+         */
+        TOTAL_ONLINE_TIME("total_online_time", Long.class),
+
         /**
          * 自定义状态 / Custom status
          */

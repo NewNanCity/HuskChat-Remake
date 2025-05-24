@@ -33,8 +33,11 @@ import net.kyori.adventure.text.Component;
 import net.william278.huskchat.HuskChat;
 import net.william278.huskchat.channel.Channel;
 import net.william278.huskchat.config.Settings;
+import net.william278.huskchat.event.PlayerLocationChangeEvent;
+import net.william278.huskchat.event.PlayerStatusChangeEvent;
 import net.william278.huskchat.message.ChatMessage;
 import net.william278.huskchat.user.OnlineUser;
+import net.william278.huskchat.user.PlayerInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spicord.Spicord;
@@ -43,6 +46,7 @@ import org.spicord.bot.DiscordBot;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -143,6 +147,167 @@ public class SpicordHook implements DiscordHook {
         @Override
         public Audience getAudience() {
             throw new UnsupportedOperationException("Discord players cannot be used as an audience");
+        }
+
+        // ========== PlayerInfo 接口实现 / PlayerInfo interface implementation ==========
+
+        @Override
+        public double getHealth() {
+            return 20.0; // Discord用户总是满血
+        }
+
+        @Override
+        public double getMaxHealth() {
+            return 20.0;
+        }
+
+        @Override
+        public int getFoodLevel() {
+            return 20; // Discord用户总是满饱食度
+        }
+
+        @Override
+        public int getExperienceLevel() {
+            return 0;
+        }
+
+        @Override
+        @NotNull
+        public PlayerLocationChangeEvent.PlayerLocation getLocation() {
+            return new PlayerLocationChangeEvent.PlayerLocation() {
+                @Override
+                @NotNull
+                public String getServer() {
+                    return "discord";
+                }
+
+                @Override
+                @NotNull
+                public String getWorld() {
+                    return "discord";
+                }
+
+                @Override
+                public double getX() {
+                    return 0;
+                }
+
+                @Override
+                public double getY() {
+                    return 0;
+                }
+
+                @Override
+                public double getZ() {
+                    return 0;
+                }
+
+                @Override
+                public float getYaw() {
+                    return 0;
+                }
+
+                @Override
+                public float getPitch() {
+                    return 0;
+                }
+            };
+        }
+
+        @Override
+        @NotNull
+        public PlayerInfo.GameMode getGameMode() {
+            return PlayerInfo.GameMode.SPECTATOR; // Discord用户默认观察者模式
+        }
+
+        @Override
+        public boolean isOnline() {
+            return true; // Discord用户总是在线
+        }
+
+        @Override
+        public boolean isSneaking() {
+            return false;
+        }
+
+        @Override
+        public boolean isFlying() {
+            return false;
+        }
+
+        @Override
+        public boolean isVanished() {
+            return false;
+        }
+
+        @Override
+        public boolean isMuted() {
+            return false; // Discord用户不能被游戏内禁言
+        }
+
+        @Override
+        public boolean isInCombat() {
+            return false;
+        }
+
+        @Override
+        public boolean isAway() {
+            return false; // Discord用户不会离开
+        }
+
+        @Override
+        @NotNull
+        public Optional<Object> getStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType) {
+            return Optional.empty(); // Discord用户没有特殊状态
+        }
+
+        @Override
+        @NotNull
+        public Map<PlayerStatusChangeEvent.StatusType, Object> getAllStatuses() {
+            return Map.of(); // Discord用户没有状态
+        }
+
+        @Override
+        @Nullable
+        public String getIpAddress() {
+            return null; // Discord用户没有IP地址
+        }
+
+        @Override
+        @Nullable
+        public String getClientBrand() {
+            return "Discord";
+        }
+
+        @Override
+        public int getProtocolVersion() {
+            return 0;
+        }
+
+        @Override
+        @Nullable
+        public String getLocale() {
+            return "en_US"; // Discord用户默认英语
+        }
+
+        @Override
+        public long getFirstJoinTime() {
+            return discordUser.getTimeCreated().toEpochSecond() * 1000;
+        }
+
+        @Override
+        public long getLastLoginTime() {
+            return System.currentTimeMillis();
+        }
+
+        @Override
+        public long getSessionTime() {
+            return 0; // Discord用户没有会话时间概念
+        }
+
+        @Override
+        public long getTotalOnlineTime() {
+            return 0; // Discord用户没有在线时间概念
         }
 
     }

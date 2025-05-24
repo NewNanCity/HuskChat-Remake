@@ -252,6 +252,40 @@ public final class BungeeHuskChat extends Plugin implements HuskChat, BungeeEven
         return this;
     }
 
+    /**
+     * 获取Gson实例
+     * Get Gson instance
+     *
+     * @return Gson实例 / Gson instance
+     */
+    @NotNull
+    public com.google.gson.Gson getGson() {
+        return new com.google.gson.Gson();
+    }
+
+    /**
+     * 获取调度器
+     * Get scheduler
+     *
+     * @return 调度器 / scheduler
+     */
+    @NotNull
+    public net.md_5.bungee.api.scheduler.TaskScheduler getScheduler() {
+        return getProxy().getScheduler();
+    }
+
+    /**
+     * 获取服务器名称
+     * Get server name
+     *
+     * @return 服务器名称 / server name
+     */
+    @NotNull
+    public String getServerName() {
+        // 对于代理服务器，返回代理服务器名称
+        return getSettings().getServerNameReplacement().getOrDefault("bungee-proxy", "bungee-proxy");
+    }
+
     private void registerExtendedAPI() {
         // Register Extended API
         net.william278.huskchat.api.BungeeHuskChatExtendedAPI extendedAPI =

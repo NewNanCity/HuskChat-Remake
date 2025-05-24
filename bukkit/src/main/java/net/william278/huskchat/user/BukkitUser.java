@@ -194,19 +194,28 @@ public class BukkitUser extends OnlineUser {
     @Nullable
     @Override
     public String getClientBrand() {
-        // Try to get client brand if available
+        // Try to get client brand if available using reflection for compatibility
         try {
-            return player.getClientBrandName();
+            // Try Paper/Spigot method first
+            java.lang.reflect.Method method = player.getClass().getMethod("getClientBrandName");
+            return (String) method.invoke(player);
         } catch (Exception e) {
-            return null;
+            // Fallback for older versions
+            try {
+                java.lang.reflect.Method method = player.getClass().getMethod("getClientBrand");
+                return (String) method.invoke(player);
+            } catch (Exception ex) {
+                return "Unknown";
+            }
         }
     }
 
     @Override
     public int getProtocolVersion() {
-        // Try to get protocol version if available
+        // Try to get protocol version if available using reflection for compatibility
         try {
-            return player.getProtocolVersion();
+            java.lang.reflect.Method method = player.getClass().getMethod("getProtocolVersion");
+            return (Integer) method.invoke(player);
         } catch (Exception e) {
             return -1; // Unknown
         }

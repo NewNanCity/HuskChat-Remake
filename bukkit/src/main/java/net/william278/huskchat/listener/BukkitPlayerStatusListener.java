@@ -21,6 +21,7 @@ package net.william278.huskchat.listener;
 
 import net.william278.huskchat.BukkitHuskChat;
 import net.william278.huskchat.event.PlayerLocationChangeEvent;
+import net.william278.huskchat.event.PlayerRespawnEvent;
 import net.william278.huskchat.event.PlayerStatusChangeEvent;
 import net.william278.huskchat.network.PlayerStatusMessage;
 import net.william278.huskchat.user.BukkitPlayerLocation;
@@ -59,24 +60,24 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() && 
+        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
             event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
             return; // 只有位置变化才触发
         }
 
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         PlayerLocationChangeEvent.PlayerLocation previousLocation = lastLocations.get(player.getUniqueId());
         PlayerLocationChangeEvent.PlayerLocation newLocation = BukkitPlayerLocation.from(plugin.getServerName(), event.getTo());
-        
+
         lastLocations.put(player.getUniqueId(), newLocation);
-        
+
         if (previousLocation != null) {
             // 触发位置变化事件
-            plugin.firePlayerLocationChangeEvent(huskPlayer, previousLocation, newLocation, 
+            plugin.firePlayerLocationChangeEvent(huskPlayer, previousLocation, newLocation,
                 PlayerLocationChangeEvent.MovementReason.PLAYER_MOVEMENT);
-            
+
             // 发送到代理服务器
             sendLocationChangeToProxy(huskPlayer, previousLocation, newLocation);
         }
@@ -86,12 +87,12 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 初始化位置和生命值
         PlayerLocationChangeEvent.PlayerLocation location = BukkitPlayerLocation.from(plugin.getServerName(), player.getLocation());
         lastLocations.put(player.getUniqueId(), location);
         lastHealthValues.put(player.getUniqueId(), player.getHealth());
-        
+
         // 请求状态同步
         requestStatusSyncFromProxy(huskPlayer);
     }
@@ -112,52 +113,59 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         double previousHealth = lastHealthValues.getOrDefault(player.getUniqueId(), player.getHealth());
         double newHealth = Math.max(0, player.getHealth() - event.getFinalDamage());
         double maxHealth = player.getMaxHealth();
-        
+
         lastHealthValues.put(player.getUniqueId(), newHealth);
-        
+
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 触发生命值变化事件
-        plugin.firePlayerHealthChangeEvent(huskPlayer, previousHealth, newHealth, maxHealth, 
-            event.getCause().name(), null);
-        
+        plugin.firePlayerHealthChangeEvent(huskPlayer, previousHealth, newHealth, maxHealth,
+            net.william278.huskchat.event.PlayerHealthChangeEvent.HealthChangeReason.ENVIRONMENTAL, null);
+
         // 发送到代理服务器
         sendHealthChangeToProxy(huskPlayer, previousHealth, newHealth, maxHealth, event.getCause().name());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         Player killer = player.getKiller();
         OnlineUser huskKiller = killer != null ? BukkitUser.adapt(killer, plugin) : null;
-        
-        String deathMessage = event.getDeathMessage();
-        
-        // 触发死亡事件
-        plugin.firePlayerDeathEvent(huskPlayer, huskKiller, deathMessage);
-        
+
+        String deathMessage = event.getDeathMessage() != null ? event.getDeathMessage() : "Player died";
+
+        // 获取死亡位置
+        PlayerLocationChangeEvent.PlayerLocation deathLocation = BukkitPlayerLocation.from(plugin.getServerName(), player.getLocation());
+
+        // 触发死亡事件 - 使用正确的方法签名
+        plugin.firePlayerDeathEvent(huskPlayer, deathMessage,
+            net.william278.huskchat.event.PlayerDeathEvent.DeathCause.OTHER, huskKiller, deathLocation);
+
         // 发送到代理服务器
         sendPlayerDeathToProxy(huskPlayer, huskKiller, deathMessage);
-        
+
         // 重置生命值记录
         lastHealthValues.put(player.getUniqueId(), player.getMaxHealth());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
-        // 触发重生事件
-        plugin.firePlayerRespawnEvent(huskPlayer, "Player respawned");
-        
+
+        // 获取重生位置
+        PlayerLocationChangeEvent.PlayerLocation respawnLocation = BukkitPlayerLocation.from(plugin.getServerName(), event.getRespawnLocation());
+
+        // 触发重生事件 - 使用正确的方法签名
+        plugin.firePlayerRespawnEvent(huskPlayer, respawnLocation,
+            net.william278.huskchat.event.PlayerRespawnEvent.RespawnReason.NORMAL);
+
         // 发送到代理服务器
         sendPlayerRespawnToProxy(huskPlayer, "Player respawned");
-        
+
         // 更新位置记录
-        PlayerLocationChangeEvent.PlayerLocation respawnLocation = BukkitPlayerLocation.from(plugin.getServerName(), event.getRespawnLocation());
         lastLocations.put(player.getUniqueId(), respawnLocation);
     }
 
@@ -165,13 +173,13 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
     public void onPlayerGameModeChange(PlayerGameModeChangeEvent event) {
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 触发状态变化事件
-        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.GAME_MODE, 
+        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.GAME_MODE,
             player.getGameMode().name(), event.getNewGameMode().name(), "Game mode changed", -1);
-        
+
         // 发送到代理服务器
-        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.GAME_MODE, 
+        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.GAME_MODE,
             event.getNewGameMode().name(), "Game mode changed");
     }
 
@@ -179,13 +187,13 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
     public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 触发状态变化事件
-        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.SNEAKING, 
+        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.SNEAKING,
             !event.isSneaking(), event.isSneaking(), "Sneak toggled", -1);
-        
+
         // 发送到代理服务器
-        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.SNEAKING, 
+        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.SNEAKING,
             event.isSneaking(), "Sneak toggled");
     }
 
@@ -193,13 +201,13 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
     public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 触发状态变化事件
-        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.FLYING, 
+        plugin.firePlayerStatusChangeEvent(huskPlayer, PlayerStatusChangeEvent.StatusType.FLYING,
             !event.isFlying(), event.isFlying(), "Flight toggled", -1);
-        
+
         // 发送到代理服务器
-        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.FLYING, 
+        sendStatusUpdateToProxy(huskPlayer, PlayerStatusChangeEvent.StatusType.FLYING,
             event.isFlying(), "Flight toggled");
     }
 
@@ -214,7 +222,7 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         try {
             String json = new String(message);
             PlayerStatusMessage statusMessage = plugin.getGson().fromJson(json, PlayerStatusMessage.class);
-            
+
             handlePlayerStatusMessage(statusMessage);
         } catch (Exception e) {
             plugin.log(java.util.logging.Level.WARNING, "Failed to handle plugin message: " + e.getMessage());
@@ -235,7 +243,7 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         }
 
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 收集所有状态信息
         Map<String, Object> allStatuses = new HashMap<>();
         allStatuses.put("health", player.getHealth());
@@ -246,11 +254,11 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         allStatuses.put("sneaking", player.isSneaking());
         allStatuses.put("flying", player.isFlying());
         allStatuses.put("world", player.getWorld().getName());
-        
+
         // 发送同步响应
         PlayerStatusMessage response = PlayerStatusMessage.createSyncResponse(
-            huskPlayer.getUuid(), huskPlayer.getUsername(), plugin.getServerName(), allStatuses);
-        
+            huskPlayer.getUuid(), huskPlayer.getName(), plugin.getServerName(), allStatuses);
+
         sendMessageToProxy(player, response);
     }
 
@@ -262,15 +270,15 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         }
 
         OnlineUser huskPlayer = BukkitUser.adapt(player, plugin);
-        
+
         // 更新本地状态（如果需要）
         String statusTypeKey = message.getData("status_type", String.class);
         Object value = message.getData("value");
-        
+
         if (statusTypeKey != null && value != null) {
             try {
                 PlayerStatusChangeEvent.StatusType statusType = PlayerStatusChangeEvent.StatusType.fromKey(statusTypeKey);
-                
+
                 if (huskPlayer instanceof BukkitUser bukkitUser) {
                     bukkitUser.updateStatus(statusType, value);
                 }
@@ -282,7 +290,7 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
 
     // ========== 消息发送方法 / Message Sending Methods ==========
 
-    private void sendLocationChangeToProxy(@NotNull OnlineUser player, @NotNull PlayerLocationChangeEvent.PlayerLocation from, 
+    private void sendLocationChangeToProxy(@NotNull OnlineUser player, @NotNull PlayerLocationChangeEvent.PlayerLocation from,
                                          @NotNull PlayerLocationChangeEvent.PlayerLocation to) {
         Map<String, Object> locationData = Map.of(
             "from_world", from.getWorld(),
@@ -294,19 +302,19 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
             "to_y", to.getY(),
             "to_z", to.getZ()
         );
-        
+
         PlayerStatusMessage message = PlayerStatusMessage.createLocationChange(
-            player.getUuid(), player.getUsername(), plugin.getServerName(), locationData);
-        
+            player.getUuid(), player.getName(), plugin.getServerName(), locationData);
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
-    private void sendHealthChangeToProxy(@NotNull OnlineUser player, double previousHealth, double newHealth, 
+    private void sendHealthChangeToProxy(@NotNull OnlineUser player, double previousHealth, double newHealth,
                                        double maxHealth, @NotNull String reason) {
         PlayerStatusMessage message = PlayerStatusMessage.createHealthChange(
-            player.getUuid(), player.getUsername(), plugin.getServerName(), 
+            player.getUuid(), player.getName(), plugin.getServerName(),
             previousHealth, newHealth, maxHealth, reason);
-        
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
@@ -314,38 +322,38 @@ public class BukkitPlayerStatusListener implements Listener, PluginMessageListen
         Map<String, Object> data = new HashMap<>();
         data.put("death_message", deathMessage);
         if (killer != null) {
-            data.put("killer", killer.getUsername());
+            data.put("killer", killer.getName());
         }
-        
+
         PlayerStatusMessage message = new PlayerStatusMessage(
-            PlayerStatusMessage.MessageType.PLAYER_DEATH, 
-            player.getUuid(), player.getUsername(), plugin.getServerName(), data);
-        
+            PlayerStatusMessage.MessageType.PLAYER_DEATH,
+            player.getUuid(), player.getName(), plugin.getServerName(), data);
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
     private void sendPlayerRespawnToProxy(@NotNull OnlineUser player, @NotNull String reason) {
         Map<String, Object> data = Map.of("reason", reason);
-        
+
         PlayerStatusMessage message = new PlayerStatusMessage(
-            PlayerStatusMessage.MessageType.PLAYER_RESPAWN, 
-            player.getUuid(), player.getUsername(), plugin.getServerName(), data);
-        
+            PlayerStatusMessage.MessageType.PLAYER_RESPAWN,
+            player.getUuid(), player.getName(), plugin.getServerName(), data);
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
-    private void sendStatusUpdateToProxy(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType, 
+    private void sendStatusUpdateToProxy(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType,
                                        @NotNull Object value, @NotNull String reason) {
         PlayerStatusMessage message = PlayerStatusMessage.createStatusUpdate(
-            player.getUuid(), player.getUsername(), plugin.getServerName(), statusType, value, reason);
-        
+            player.getUuid(), player.getName(), plugin.getServerName(), statusType, value, reason);
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
     private void requestStatusSyncFromProxy(@NotNull OnlineUser player) {
         PlayerStatusMessage message = PlayerStatusMessage.createSyncRequest(
-            player.getUuid(), player.getUsername(), plugin.getServerName());
-        
+            player.getUuid(), player.getName(), plugin.getServerName());
+
         sendMessageToProxy(((BukkitUser) player).getPlayer(), message);
     }
 
