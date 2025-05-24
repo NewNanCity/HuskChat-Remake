@@ -68,7 +68,7 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
      * @param reason 切换原因 / switch reason
      * @return 是否成功切换 / whether successfully switched
      */
-    public CompletableFuture<Boolean> switchPlayerChannel(@NotNull OnlineUser player, @NotNull String channelId, 
+    public CompletableFuture<Boolean> switchPlayerChannel(@NotNull OnlineUser player, @NotNull String channelId,
                                                          @NotNull ChannelSwitchEvent.SwitchReason reason) {
         final Optional<Channel> targetChannel = plugin.getChannels().getChannel(channelId);
         if (targetChannel.isEmpty()) {
@@ -76,26 +76,26 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
         }
 
         final String previousChannelId = plugin.getUserCache().getPlayerChannel(player.getUuid()).orElse(null);
-        
+
         return plugin.fireChannelSwitchEvent(player, previousChannelId, channelId, reason)
                 .thenApply(event -> {
                     if (event.isCancelled()) {
                         return false;
                     }
-                    
+
                     // 触发离开事件
                     if (previousChannelId != null) {
-                        plugin.firePlayerLeaveChannelEvent(player, previousChannelId, 
+                        plugin.firePlayerLeaveChannelEvent(player, previousChannelId,
                             PlayerLeaveChannelEvent.LeaveReason.CHANNEL_SWITCH);
                     }
-                    
+
                     // 执行频道切换
                     plugin.editUserCache(cache -> cache.switchPlayerChannel(player, event.getNewChannelId(), plugin));
-                    
+
                     // 触发加入事件
-                    plugin.firePlayerJoinChannelEvent(player, event.getNewChannelId(), 
+                    plugin.firePlayerJoinChannelEvent(player, event.getNewChannelId(),
                         PlayerJoinChannelEvent.JoinReason.MANUAL_SWITCH);
-                    
+
                     return true;
                 });
     }
@@ -141,7 +141,7 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
      * @param message 消息内容 / message content
      * @return 发送结果 / send result
      */
-    public CompletableFuture<Boolean> sendPrivateMessage(@NotNull OnlineUser sender, @NotNull List<String> recipients, 
+    public CompletableFuture<Boolean> sendPrivateMessage(@NotNull OnlineUser sender, @NotNull List<String> recipients,
                                                         @NotNull String message) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -163,7 +163,7 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
      * @param sender 发送者（可为null表示系统消息） / sender (null for system message)
      * @return 发送结果 / send result
      */
-    public CompletableFuture<Boolean> sendChannelMessage(@NotNull String channelId, @NotNull String message, 
+    public CompletableFuture<Boolean> sendChannelMessage(@NotNull String channelId, @NotNull String message,
                                                         @Nullable OnlineUser sender) {
         final Optional<Channel> channel = plugin.getChannels().getChannel(channelId);
         if (channel.isEmpty()) {
@@ -246,5 +246,212 @@ public class HuskChatExtendedAPI extends HuskChatAPI {
     @FunctionalInterface
     public interface MessageFilterEventListener {
         void onMessageFilter(@NotNull MessageFilterEvent event);
+    }
+
+    // ========== 命令执行 API / Command Execution API ==========
+
+    /**
+     * 代表玩家执行聊天命令
+     * Execute chat command on behalf of player
+     *
+     * @param player 玩家 / player
+     * @param command 命令 / command
+     * @param args 参数 / arguments
+     * @return 执行结果 / execution result
+     */
+    public CompletableFuture<Boolean> executeChatCommand(@NotNull OnlineUser player, @NotNull String command, @NotNull String... args) {
+        ChatCommandEvent.CommandType commandType = ChatCommandEvent.CommandType.fromCommand(command);
+
+        // 触发PRE事件
+        return plugin.fireChatCommandEvent(player, command, args, commandType, ChatCommandEvent.ExecutionPhase.PRE)
+                .thenCompose(preEvent -> {
+                    if (preEvent.isCancelled()) {
+                        return CompletableFuture.completedFuture(false);
+                    }
+
+                    // 执行命令逻辑
+                    return executeCommandLogic(player, preEvent.getCommand(), preEvent.getArgs(), commandType)
+                            .thenCompose(success -> {
+                                // 触发POST事件
+                                return plugin.fireChatCommandEvent(player, command, args, commandType, ChatCommandEvent.ExecutionPhase.POST)
+                                        .thenApply(postEvent -> {
+                                            postEvent.setSuccessful(success);
+                                            if (!success) {
+                                                postEvent.setFailureReason("Command execution failed");
+                                            }
+                                            return success;
+                                        });
+                            });
+                });
+    }
+
+    /**
+     * 验证命令权限
+     * Validate command permissions
+     *
+     * @param player 玩家 / player
+     * @param command 命令 / command
+     * @return 是否有权限 / whether has permission
+     */
+    public boolean validateCommandPermission(@NotNull OnlineUser player, @NotNull String command) {
+        ChatCommandEvent.CommandType commandType = ChatCommandEvent.CommandType.fromCommand(command);
+
+        return switch (commandType) {
+            case CHANNEL_SWITCH -> player.hasPermission("huskchat.command.channel", true);
+            case PRIVATE_MESSAGE -> player.hasPermission("huskchat.command.msg", true);
+            case REPLY -> player.hasPermission("huskchat.command.reply", true);
+            case BROADCAST -> player.hasPermission("huskchat.command.broadcast", false);
+            case SOCIAL_SPY -> player.hasPermission("huskchat.command.socialspy", false);
+            case LOCAL_SPY -> player.hasPermission("huskchat.command.localspy", false);
+            case OPT_OUT_MESSAGE -> player.hasPermission("huskchat.command.optout", true);
+            default -> true;
+        };
+    }
+
+    private CompletableFuture<Boolean> executeCommandLogic(@NotNull OnlineUser player, @NotNull String command,
+                                                          @NotNull String[] args, @NotNull ChatCommandEvent.CommandType commandType) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return switch (commandType) {
+                    case CHANNEL_SWITCH -> {
+                        if (args.length > 0) {
+                            yield switchPlayerChannel(player, args[0], ChannelSwitchEvent.SwitchReason.API_CALL).join();
+                        }
+                        yield false;
+                    }
+                    case PRIVATE_MESSAGE -> {
+                        if (args.length >= 2) {
+                            String recipient = args[0];
+                            String message = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
+                            yield sendPrivateMessage(player, List.of(recipient), message).join();
+                        }
+                        yield false;
+                    }
+                    default -> {
+                        // 其他命令的默认处理
+                        plugin.log(java.util.logging.Level.INFO, "Executed command: " + command + " by " + player.getUsername());
+                        yield true;
+                    }
+                };
+            } catch (Exception e) {
+                plugin.log(java.util.logging.Level.WARNING, "Failed to execute command: " + command, e);
+                return false;
+            }
+        });
+    }
+
+    // ========== 玩家状态管理 API / Player Status Management API ==========
+
+    /**
+     * 获取玩家信息
+     * Get player information
+     *
+     * @param player 玩家 / player
+     * @return 玩家信息 / player information
+     */
+    @NotNull
+    public PlayerInfo getPlayerInfo(@NotNull OnlineUser player) {
+        return player; // OnlineUser implements PlayerInfo
+    }
+
+    /**
+     * 更新玩家状态
+     * Update player status
+     *
+     * @param player 玩家 / player
+     * @param statusType 状态类型 / status type
+     * @param newValue 新值 / new value
+     * @param reason 原因 / reason
+     * @param duration 持续时间（毫秒，-1为永久） / duration (milliseconds, -1 for permanent)
+     * @return 更新结果 / update result
+     */
+    public CompletableFuture<Boolean> updatePlayerStatus(@NotNull OnlineUser player,
+                                                        @NotNull PlayerStatusChangeEvent.StatusType statusType,
+                                                        @NotNull Object newValue,
+                                                        @NotNull String reason,
+                                                        long duration) {
+        Object previousValue = player.getStatus(statusType).orElse(null);
+
+        return plugin.firePlayerStatusChangeEvent(player, statusType, previousValue, newValue, reason, duration)
+                .thenApply(event -> {
+                    if (event.isCancelled()) {
+                        return false;
+                    }
+
+                    // 更新状态（需要在具体平台实现中处理）
+                    updatePlayerStatusInternal(player, statusType, newValue, duration);
+                    return true;
+                });
+    }
+
+    /**
+     * 检查玩家是否满足聊天条件
+     * Check if player meets chat conditions
+     *
+     * @param player 玩家 / player
+     * @param channelId 频道ID / channel ID
+     * @return 检查结果 / check result
+     */
+    @NotNull
+    public ChatConditionResult checkChatConditions(@NotNull OnlineUser player, @NotNull String channelId) {
+        // 检查基本权限
+        if (!player.hasPermission("huskchat.channel." + channelId + ".send", true)) {
+            return new ChatConditionResult(false, "No permission to send messages in this channel");
+        }
+
+        // 检查禁言状态
+        if (player.isMuted()) {
+            return new ChatConditionResult(false, "Player is muted");
+        }
+
+        // 检查生命值限制（如果配置了）
+        if (player.isCriticalHealth() && shouldRestrictChatOnLowHealth(channelId)) {
+            return new ChatConditionResult(false, "Cannot chat while in critical health condition");
+        }
+
+        // 检查战斗状态限制
+        if (player.isInCombat() && shouldRestrictChatInCombat(channelId)) {
+            return new ChatConditionResult(false, "Cannot chat while in combat");
+        }
+
+        return new ChatConditionResult(true, null);
+    }
+
+    protected void updatePlayerStatusInternal(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType, @NotNull Object newValue, long duration) {
+        // 默认实现，子类可以重写
+        throw new UnsupportedOperationException("Platform-specific implementation required");
+    }
+
+    protected boolean shouldRestrictChatOnLowHealth(@NotNull String channelId) {
+        // 默认不限制，可以通过配置或子类重写
+        return false;
+    }
+
+    protected boolean shouldRestrictChatInCombat(@NotNull String channelId) {
+        // 默认不限制，可以通过配置或子类重写
+        return false;
+    }
+
+    /**
+     * 聊天条件检查结果
+     * Chat condition check result
+     */
+    public static class ChatConditionResult {
+        private final boolean allowed;
+        private final String reason;
+
+        public ChatConditionResult(boolean allowed, @Nullable String reason) {
+            this.allowed = allowed;
+            this.reason = reason;
+        }
+
+        public boolean isAllowed() {
+            return allowed;
+        }
+
+        @Nullable
+        public String getReason() {
+            return reason;
+        }
     }
 }

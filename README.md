@@ -49,6 +49,10 @@ It's designed to be easy to configure with an elegant out-of-box setup, while al
 
 **🚀 Enhanced API Interface** &mdash; Unified message sending, channel management, and user management API
 
+**🚀 Player Status Integration** &mdash; Health, location, combat status, and other Minecraft-specific data integration
+
+**🚀 Command Execution API** &mdash; Programmatic command execution with permission validation and event handling
+
 **🚀 Modern Architecture** &mdash; Optimized for the latest Minecraft server platforms
 
 **🚀 Better Extensibility** &mdash; Plugin-based design supporting custom extensions and integrations
@@ -107,6 +111,13 @@ api.registerChatMessageListener(event -> {
     }
 });
 
+// Listen to player health changes
+api.registerPlayerHealthChangeListener(event -> {
+    if (event.isLowHealth()) {
+        event.getPlayer().sendMessage("Warning: Low health!");
+    }
+});
+
 // Listen to channel switches
 api.registerChannelSwitchListener(event -> {
     player.sendMessage("Welcome to " + event.getNewChannelId() + " channel!");
@@ -129,6 +140,23 @@ api.sendPrivateMessage(sender, List.of("PlayerName"), "Hello!");
 
 // Send channel message
 api.sendChannelMessage("global", "System Announcement", null);
+```
+
+### 🎮 Player Status Integration
+```java
+// Get player information
+PlayerInfo info = api.getPlayerInfo(player);
+boolean isLowHealth = info.isLowHealth();
+boolean isInCombat = info.isInCombat();
+
+// Execute commands programmatically
+api.executeChatCommand(player, "/channel", "staff");
+
+// Check chat conditions
+ChatConditionResult result = api.checkChatConditions(player, "global");
+if (!result.isAllowed()) {
+    player.sendMessage("Cannot chat: " + result.getReason());
+}
 ```
 
 ## Building

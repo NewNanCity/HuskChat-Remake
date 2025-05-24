@@ -20,16 +20,36 @@
 package net.william278.huskchat.user;
 
 import net.william278.huskchat.HuskChat;
+import net.william278.huskchat.event.PlayerLocationChangeEvent;
+import net.william278.huskchat.event.PlayerStatusChangeEvent;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class BukkitUser extends OnlineUser {
     private final Player player;
+    private final Map<PlayerStatusChangeEvent.StatusType, Object> statusCache = new ConcurrentHashMap<>();
+    private final long joinTime;
 
     private BukkitUser(@NotNull Player player, @NotNull HuskChat plugin) {
         super(player.getName(), player.getUniqueId(), plugin);
         this.player = player;
+        this.joinTime = System.currentTimeMillis();
+        initializeStatusCache();
+    }
+
+    private void initializeStatusCache() {
+        // Initialize with default values
+        statusCache.put(PlayerStatusChangeEvent.StatusType.AWAY, false);
+        statusCache.put(PlayerStatusChangeEvent.StatusType.COMBAT, false);
+        statusCache.put(PlayerStatusChangeEvent.StatusType.MUTED, false);
+        statusCache.put(PlayerStatusChangeEvent.StatusType.BUSY, false);
+        statusCache.put(PlayerStatusChangeEvent.StatusType.VANISHED, false);
     }
 
     @NotNull
@@ -65,6 +85,180 @@ public class BukkitUser extends OnlineUser {
     @NotNull
     public Player getPlayer() {
         return player;
+    }
+
+    // ========== PlayerInfo Implementation ==========
+
+    @Override
+    public double getHealth() {
+        return player.getHealth();
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return player.getMaxHealth();
+    }
+
+    @Override
+    public int getFoodLevel() {
+        return player.getFoodLevel();
+    }
+
+    @Override
+    public int getExperienceLevel() {
+        return player.getLevel();
+    }
+
+    @NotNull
+    @Override
+    public PlayerLocationChangeEvent.PlayerLocation getLocation() {
+        return BukkitPlayerLocation.from(getServerName(), player.getLocation());
+    }
+
+    @NotNull
+    @Override
+    public GameMode getGameMode() {
+        return switch (player.getGameMode()) {
+            case SURVIVAL -> GameMode.SURVIVAL;
+            case CREATIVE -> GameMode.CREATIVE;
+            case ADVENTURE -> GameMode.ADVENTURE;
+            case SPECTATOR -> GameMode.SPECTATOR;
+        };
+    }
+
+    @Override
+    public boolean isOnline() {
+        return player.isOnline();
+    }
+
+    @Override
+    public boolean isSneaking() {
+        return player.isSneaking();
+    }
+
+    @Override
+    public boolean isFlying() {
+        return player.isFlying();
+    }
+
+    @Override
+    public boolean isVanished() {
+        // Check for common vanish plugins
+        return (Boolean) statusCache.getOrDefault(PlayerStatusChangeEvent.StatusType.VANISHED, false) ||
+               player.hasMetadata("vanished") ||
+               !player.canSee(player); // Basic vanish check
+    }
+
+    @Override
+    public boolean isInCombat() {
+        return (Boolean) statusCache.getOrDefault(PlayerStatusChangeEvent.StatusType.COMBAT, false);
+    }
+
+    @Override
+    public boolean isAway() {
+        return (Boolean) statusCache.getOrDefault(PlayerStatusChangeEvent.StatusType.AWAY, false);
+    }
+
+    @Override
+    public boolean isMuted() {
+        return (Boolean) statusCache.getOrDefault(PlayerStatusChangeEvent.StatusType.MUTED, false);
+    }
+
+    @NotNull
+    @Override
+    public Optional<Object> getStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType) {
+        return Optional.ofNullable(statusCache.get(statusType));
+    }
+
+    @NotNull
+    @Override
+    public Map<PlayerStatusChangeEvent.StatusType, Object> getAllStatuses() {
+        Map<PlayerStatusChangeEvent.StatusType, Object> allStatuses = new HashMap<>(statusCache);
+
+        // Add real-time status updates
+        allStatuses.put(PlayerStatusChangeEvent.StatusType.SNEAKING, isSneaking());
+        allStatuses.put(PlayerStatusChangeEvent.StatusType.FLYING, isFlying());
+        allStatuses.put(PlayerStatusChangeEvent.StatusType.GAME_MODE, getGameMode().getName());
+        allStatuses.put(PlayerStatusChangeEvent.StatusType.FOOD_LEVEL, getFoodLevel());
+        allStatuses.put(PlayerStatusChangeEvent.StatusType.EXPERIENCE_LEVEL, getExperienceLevel());
+
+        return allStatuses;
+    }
+
+    @Nullable
+    @Override
+    public String getIpAddress() {
+        return player.getAddress() != null ? player.getAddress().getAddress().getHostAddress() : null;
+    }
+
+    @Nullable
+    @Override
+    public String getClientBrand() {
+        // Try to get client brand if available
+        try {
+            return player.getClientBrandName();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public int getProtocolVersion() {
+        // Try to get protocol version if available
+        try {
+            return player.getProtocolVersion();
+        } catch (Exception e) {
+            return -1; // Unknown
+        }
+    }
+
+    @Nullable
+    @Override
+    public String getLocale() {
+        return player.getLocale();
+    }
+
+    @Override
+    public long getFirstJoinTime() {
+        return player.getFirstPlayed();
+    }
+
+    @Override
+    public long getLastLoginTime() {
+        return player.getLastPlayed();
+    }
+
+    @Override
+    public long getSessionTime() {
+        return System.currentTimeMillis() - joinTime;
+    }
+
+    @Override
+    public long getTotalOnlineTime() {
+        return player.getStatistic(org.bukkit.Statistic.PLAY_ONE_MINUTE);
+    }
+
+    /**
+     * 更新玩家状态
+     * Update player status
+     *
+     * @param statusType 状态类型 / status type
+     * @param value 状态值 / status value
+     */
+    public void updateStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType, @NotNull Object value) {
+        if (statusType.isValidValue(value)) {
+            statusCache.put(statusType, value);
+        }
+    }
+
+    /**
+     * 移除玩家状态
+     * Remove player status
+     *
+     * @param statusType 状态类型 / status type
+     */
+    public void removeStatus(@NotNull PlayerStatusChangeEvent.StatusType statusType) {
+        statusCache.remove(statusType);
     }
 
 }

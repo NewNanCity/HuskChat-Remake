@@ -110,6 +110,12 @@ public class BukkitHuskChat extends JavaPlugin implements HuskChat, BukkitEventP
         // Register events
         getServer().getPluginManager().registerEvents(new BukkitListener(this), this);
 
+        // Register player status listener
+        registerPlayerStatusListener();
+
+        // Register plugin message channels
+        registerPluginMessageChannels();
+
         // Register commands & channel shortcuts
         BukkitCommand.Type.registerAll(this);
         getChannels().getChannels().forEach(channel -> channel.getShortcutCommands()
@@ -215,6 +221,20 @@ public class BukkitHuskChat extends JavaPlugin implements HuskChat, BukkitEventP
     @Override
     public BukkitHuskChat getPlugin() {
         return this;
+    }
+
+    private void registerPlayerStatusListener() {
+        net.william278.huskchat.listener.BukkitPlayerStatusListener statusListener =
+            new net.william278.huskchat.listener.BukkitPlayerStatusListener(this);
+        getServer().getPluginManager().registerEvents(statusListener, this);
+
+        // 注册为插件消息监听器
+        getServer().getMessenger().registerIncomingPluginChannel(this, "huskchat:player_status", statusListener);
+    }
+
+    private void registerPluginMessageChannels() {
+        // 注册插件消息通道
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "huskchat:player_status");
     }
 
 }

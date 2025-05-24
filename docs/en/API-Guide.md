@@ -93,14 +93,14 @@ api.registerChatMessageListener(event -> {
     OnlineUser sender = event.getSender();
     String message = event.getMessage();
     String channelId = event.getChannelId();
-    
+
     // Check for specific keywords
     if (message.contains("forbidden")) {
         event.setCancelled(true);
         sender.sendMessage("Message contains forbidden content!");
         return;
     }
-    
+
     // Modify message content
     if (sender.hasPermission("chat.rainbow")) {
         event.setMessage("&c" + message); // Add color
@@ -115,10 +115,10 @@ api.registerChannelSwitchListener(event -> {
     OnlineUser player = event.getPlayer();
     String previousChannel = event.getPreviousChannelId();
     String newChannel = event.getNewChannelId();
-    
+
     // Log channel switches
     System.out.println(player.getUsername() + " switched from " + previousChannel + " to " + newChannel);
-    
+
     // Prevent switching to certain channels
     if (newChannel.equals("admin") && !player.hasPermission("chat.admin")) {
         event.setCancelled(true);
@@ -134,10 +134,10 @@ api.registerPrivateMessageListener(event -> {
     OnlineUser sender = event.getSender();
     List<OnlineUser> recipients = event.getRecipients();
     String message = event.getMessage();
-    
+
     // Log private messages
-    System.out.println("Private: " + sender.getUsername() + " -> " + 
-                      recipients.stream().map(OnlineUser::getUsername).collect(Collectors.joining(", ")) + 
+    System.out.println("Private: " + sender.getUsername() + " -> " +
+                      recipients.stream().map(OnlineUser::getUsername).collect(Collectors.joining(", ")) +
                       ": " + message);
 });
 ```
@@ -150,7 +150,7 @@ api.registerMessageFilterListener(event -> {
         // Handle profanity filtering
         OnlineUser sender = event.getSender();
         sender.sendMessage("Please watch your language!");
-        
+
         // Can modify filtered message
         event.setFilteredMessage("[Censored]");
     }
@@ -164,7 +164,7 @@ api.registerMessageFilterListener(event -> {
 - **Modifiable**: Sender, message content, target channel
 - **Cancellable**: Yes
 
-### ChannelSwitchEvent  
+### ChannelSwitchEvent
 - **Triggered**: When player switches channels
 - **Modifiable**: Target channel
 - **Cancellable**: Yes
@@ -214,7 +214,7 @@ api.sendPrivateMessage(sender, recipients, message)
 api.registerChannelSwitchListener(event -> {
     OnlineUser player = event.getPlayer();
     String targetChannel = event.getNewChannelId();
-    
+
     // Check permissions
     if (!player.hasPermission("huskchat.channel." + targetChannel + ".join")) {
         event.setCancelled(true);
@@ -240,21 +240,21 @@ Here's a complete example plugin showing how to use the HuskChat API:
 
 ```java
 public class ExamplePlugin extends JavaPlugin implements Listener {
-    
+
     private HuskChatExtendedAPI api;
-    
+
     @Override
     public void onEnable() {
         // Get API instance
         api = HuskChatExtendedAPI.getInstance();
-        
+
         // Register event listeners
         api.registerChatMessageListener(this::onChatMessage);
         api.registerChannelSwitchListener(this::onChannelSwitch);
-        
+
         getLogger().info("Example plugin enabled!");
     }
-    
+
     private void onChatMessage(ChatMessageEvent event) {
         // Add effects for VIP players
         OnlineUser sender = event.getSender();
@@ -263,17 +263,17 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
             event.setMessage("✨ " + message + " ✨");
         }
     }
-    
+
     private void onChannelSwitch(ChannelSwitchEvent event) {
         // Welcome players to new channel
         OnlineUser player = event.getPlayer();
         String channelId = event.getNewChannelId();
-        
+
         Bukkit.getScheduler().runTaskLater(this, () -> {
             player.sendMessage("Welcome to " + channelId + " channel!");
         }, 20L); // 1 second later
     }
-    
+
     @Override
     public void onDisable() {
         // Clean up resources
@@ -285,8 +285,168 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
 }
 ```
 
+## Player Status Integration API
+
+HuskChat Remake introduces powerful player status integration features:
+
+### Get Player Information
+
+```java
+// Get detailed player information
+PlayerInfo info = api.getPlayerInfo(player);
+
+// Check player status
+double health = info.getHealth();
+boolean isLowHealth = info.isLowHealth();
+boolean isInCombat = info.isInCombat();
+PlayerLocationChangeEvent.PlayerLocation location = info.getLocation();
+```
+
+### Command Execution API
+
+```java
+// Execute chat command on behalf of player
+api.executeChatCommand(player, "/channel", "global")
+    .thenAccept(success -> {
+        if (success) {
+            player.sendMessage("Command executed successfully!");
+        }
+    });
+
+// Validate command permissions
+boolean hasPermission = api.validateCommandPermission(player, "/msg");
+```
+
+### Player Status Management
+
+```java
+// Update player status
+api.updatePlayerStatus(player,
+    PlayerStatusChangeEvent.StatusType.COMBAT,
+    true,
+    "Entered combat",
+    15000) // Auto-remove after 15 seconds
+    .thenAccept(success -> {
+        if (success) {
+            player.sendMessage("Combat status set");
+        }
+    });
+
+// Check chat conditions
+HuskChatExtendedAPI.ChatConditionResult result = api.checkChatConditions(player, "global");
+if (!result.isAllowed()) {
+    player.sendMessage("Cannot chat: " + result.getReason());
+}
+```
+
+### Location-based Features
+
+```java
+// Get nearby players
+List<OnlineUser> nearbyPlayers = api.getNearbyPlayers(player, 50.0);
+
+// Check if players are in same region
+boolean sameRegion = api.arePlayersInSameRegion(player1, player2);
+
+// Create location-based channel
+String locationChannel = api.createLocationBasedChannel(player, 100.0);
+```
+
+## Extended Event Listeners
+
+### New Event Listeners
+
+```java
+// Listen to player health changes
+api.registerPlayerHealthChangeListener(event -> {
+    if (event.isAboutToDie()) {
+        event.getPlayer().sendMessage("§cDanger! You are about to die!");
+    }
+});
+
+// Listen to player location changes
+api.registerPlayerLocationChangeListener(event -> {
+    if (event.isCrossWorld()) {
+        OnlineUser player = event.getPlayer();
+        player.sendMessage("Welcome to " + event.getNewLocation().getWorld());
+    }
+});
+
+// Listen to player status changes
+api.registerPlayerStatusChangeListener(event -> {
+    if (event.getStatusType() == PlayerStatusChangeEvent.StatusType.COMBAT) {
+        boolean inCombat = (Boolean) event.getNewValue();
+        if (inCombat) {
+            event.getPlayer().sendMessage("§cEntered combat mode!");
+        }
+    }
+});
+
+// Listen to command execution
+api.registerChatCommandListener(event -> {
+    if (event.getPhase() == ChatCommandEvent.ExecutionPhase.PRE) {
+        // Pre-execution handling
+        getLogger().info("Player executing command: " + event.getCommand());
+    }
+});
+```
+
+## Advanced Usage Examples
+
+### Health-based Chat Restrictions
+
+```java
+api.registerChatMessageListener(event -> {
+    OnlineUser sender = event.getSender();
+
+    // Check health restrictions
+    if (sender.isLowHealth() && !sender.hasPermission("chat.lowhealth.bypass")) {
+        if (event.getChannelId().equals("staff")) {
+            event.setCancelled(true);
+            sender.sendMessage("§cHealth too low to use staff channel!");
+        }
+    }
+});
+```
+
+### Combat Status Chat Restrictions
+
+```java
+api.registerChatMessageListener(event -> {
+    OnlineUser sender = event.getSender();
+
+    if (sender.isInCombat()) {
+        // Only allow local channel during combat
+        if (!event.getChannelId().equals("local")) {
+            event.setCancelled(true);
+            sender.sendMessage("§cOnly local channel allowed during combat!");
+        }
+    }
+});
+```
+
+### Automatic Channel Switching
+
+```java
+api.registerPlayerLocationChangeListener(event -> {
+    if (event.isCrossWorld()) {
+        OnlineUser player = event.getPlayer();
+        String worldName = event.getNewLocation().getWorld();
+
+        // Auto-switch channel based on world
+        String worldChannel = "world_" + worldName;
+        if (api.getChannels().contains(worldChannel)) {
+            api.switchPlayerChannel(player, worldChannel,
+                ChannelSwitchEvent.SwitchReason.API_CALL);
+        }
+    }
+});
+```
+
 ## More Information
 
 - [Event System Documentation](Events.md)
+- [Enhanced Example Plugin](Enhanced-Example-Plugin.md)
+- [Developer Guide](Developer-Guide.md)
 - [Channel Configuration Guide](Channels.md)
 - [Command Reference](Commands.md)

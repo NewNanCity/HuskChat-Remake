@@ -22,11 +22,14 @@ package net.william278.huskchat.api;
 import net.william278.huskchat.BukkitHuskChat;
 import net.william278.huskchat.event.*;
 import net.william278.huskchat.user.BukkitUser;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.stream.Collectors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,6 +155,103 @@ public class BukkitHuskChatExtendedAPI extends HuskChatExtendedAPI {
      */
     public void unregisterMessageFilterListener(@NotNull MessageFilterEventListener listener) {
         messageFilterListeners.remove(listener);
+    }
+
+    // ========== 平台特定实现 / Platform-Specific Implementation ==========
+
+    @Override
+    protected void updatePlayerStatusInternal(@NotNull OnlineUser player, @NotNull PlayerStatusChangeEvent.StatusType statusType, @NotNull Object newValue, long duration) {
+        if (player instanceof BukkitUser bukkitUser) {
+            bukkitUser.updateStatus(statusType, newValue);
+
+            // 如果是临时状态，设置定时器
+            if (duration > 0) {
+                Bukkit.getScheduler().runTaskLater((BukkitHuskChat) plugin, () -> {
+                    bukkitUser.removeStatus(statusType);
+                    // 触发状态变化事件
+                    plugin.firePlayerStatusChangeEvent(player, statusType, newValue, null, "Temporary status expired", -1);
+                }, duration / 50); // 转换为ticks
+            }
+        }
+    }
+
+    @Override
+    protected boolean shouldRestrictChatOnLowHealth(@NotNull String channelId) {
+        // 可以从配置文件读取
+        return ((BukkitHuskChat) plugin).getSettings().getChannels().getChannel(channelId)
+                .map(channel -> {
+                    // 检查频道是否配置了生命值限制
+                    // 这里可以扩展配置系统来支持这个功能
+                    return false; // 默认不限制
+                })
+                .orElse(false);
+    }
+
+    @Override
+    protected boolean shouldRestrictChatInCombat(@NotNull String channelId) {
+        // 可以从配置文件读取
+        return ((BukkitHuskChat) plugin).getSettings().getChannels().getChannel(channelId)
+                .map(channel -> {
+                    // 检查频道是否配置了战斗限制
+                    // 这里可以扩展配置系统来支持这个功能
+                    return false; // 默认不限制
+                })
+                .orElse(false);
+    }
+
+    /**
+     * 创建基于位置的频道
+     * Create location-based channel
+     *
+     * @param player 玩家 / player
+     * @param radius 半径 / radius
+     * @return 临时频道ID / temporary channel ID
+     */
+    @NotNull
+    public String createLocationBasedChannel(@NotNull OnlineUser player, double radius) {
+        PlayerLocationChangeEvent.PlayerLocation location = player.getLocation();
+        String channelId = "location_" + location.getRegionId() + "_" + (int) radius;
+
+        // 这里可以创建临时频道逻辑
+        // 实际实现需要扩展频道系统
+
+        return channelId;
+    }
+
+    /**
+     * 获取附近的玩家
+     * Get nearby players
+     *
+     * @param player 中心玩家 / center player
+     * @param radius 半径 / radius
+     * @return 附近的玩家列表 / nearby players list
+     */
+    @NotNull
+    public List<OnlineUser> getNearbyPlayers(@NotNull OnlineUser player, double radius) {
+        if (!(player instanceof BukkitUser bukkitUser)) {
+            return List.of();
+        }
+
+        Player bukkitPlayer = bukkitUser.getPlayer();
+        return bukkitPlayer.getWorld().getPlayers().stream()
+                .filter(p -> p.getLocation().distance(bukkitPlayer.getLocation()) <= radius)
+                .map(p -> BukkitUser.adapt(p, (BukkitHuskChat) plugin))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 检查玩家是否在同一区域
+     * Check if players are in the same region
+     *
+     * @param player1 玩家1 / player 1
+     * @param player2 玩家2 / player 2
+     * @return 是否在同一区域 / whether in same region
+     */
+    public boolean arePlayersInSameRegion(@NotNull OnlineUser player1, @NotNull OnlineUser player2) {
+        PlayerLocationChangeEvent.PlayerLocation loc1 = player1.getLocation();
+        PlayerLocationChangeEvent.PlayerLocation loc2 = player2.getLocation();
+
+        return loc1.getRegionId().equals(loc2.getRegionId());
     }
 
     // ========== 内部事件监听器 / Internal Event Listener ==========

@@ -126,6 +126,95 @@ public interface BukkitEventProvider extends EventProvider {
         return completableFuture;
     }
 
+    @Override
+    default CompletableFuture<ChatCommandEvent> fireChatCommandEvent(@NotNull OnlineUser player,
+                                                                     @NotNull String command,
+                                                                     @NotNull String[] args,
+                                                                     @NotNull ChatCommandEvent.CommandType commandType,
+                                                                     @NotNull ChatCommandEvent.ExecutionPhase phase) {
+        final CompletableFuture<ChatCommandEvent> completableFuture = new CompletableFuture<>();
+        final BukkitChatCommandEvent event = new BukkitChatCommandEvent(player, command, args, commandType, phase);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerHealthChangeEvent> firePlayerHealthChangeEvent(@NotNull OnlineUser player,
+                                                                                  double previousHealth,
+                                                                                  double newHealth,
+                                                                                  double maxHealth,
+                                                                                  @NotNull PlayerHealthChangeEvent.HealthChangeReason reason,
+                                                                                  @Nullable String damager) {
+        final CompletableFuture<PlayerHealthChangeEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerHealthChangeEvent event = new BukkitPlayerHealthChangeEvent(player, previousHealth, newHealth, maxHealth, reason, damager);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerLocationChangeEvent> firePlayerLocationChangeEvent(@NotNull OnlineUser player,
+                                                                                       @Nullable PlayerLocationChangeEvent.PlayerLocation previousLocation,
+                                                                                       @NotNull PlayerLocationChangeEvent.PlayerLocation newLocation,
+                                                                                       @NotNull PlayerLocationChangeEvent.MovementReason reason) {
+        final CompletableFuture<PlayerLocationChangeEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerLocationChangeEvent event = new BukkitPlayerLocationChangeEvent(player, previousLocation, newLocation, reason);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerStatusChangeEvent> firePlayerStatusChangeEvent(@NotNull OnlineUser player,
+                                                                                   @NotNull PlayerStatusChangeEvent.StatusType statusType,
+                                                                                   @Nullable Object previousValue,
+                                                                                   @NotNull Object newValue,
+                                                                                   @NotNull String reason,
+                                                                                   long duration) {
+        final CompletableFuture<PlayerStatusChangeEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerStatusChangeEvent event = new BukkitPlayerStatusChangeEvent(player, statusType, previousValue, newValue, reason, duration);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerDeathEvent> firePlayerDeathEvent(@NotNull OnlineUser player,
+                                                                     @NotNull String deathMessage,
+                                                                     @NotNull PlayerDeathEvent.DeathCause deathCause,
+                                                                     @Nullable OnlineUser killer,
+                                                                     @NotNull PlayerLocationChangeEvent.PlayerLocation deathLocation) {
+        final CompletableFuture<PlayerDeathEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerDeathEvent event = new BukkitPlayerDeathEvent(player, deathMessage, deathCause, killer, deathLocation);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerRespawnEvent> firePlayerRespawnEvent(@NotNull OnlineUser player,
+                                                                         @NotNull PlayerLocationChangeEvent.PlayerLocation respawnLocation,
+                                                                         @NotNull PlayerRespawnEvent.RespawnReason reason) {
+        final CompletableFuture<PlayerRespawnEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerRespawnEvent event = new BukkitPlayerRespawnEvent(player, respawnLocation, reason);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
     BukkitHuskChat getPlugin();
 
 }

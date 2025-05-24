@@ -93,14 +93,14 @@ api.registerChatMessageListener(event -> {
     OnlineUser sender = event.getSender();
     String message = event.getMessage();
     String channelId = event.getChannelId();
-    
+
     // 检查是否包含特定关键词
     if (message.contains("禁词")) {
         event.setCancelled(true);
         sender.sendMessage("消息包含禁止内容！");
         return;
     }
-    
+
     // 修改消息内容
     if (sender.hasPermission("chat.rainbow")) {
         event.setMessage("&c" + message); // 添加颜色
@@ -115,10 +115,10 @@ api.registerChannelSwitchListener(event -> {
     OnlineUser player = event.getPlayer();
     String previousChannel = event.getPreviousChannelId();
     String newChannel = event.getNewChannelId();
-    
+
     // 记录频道切换
     System.out.println(player.getUsername() + " 从 " + previousChannel + " 切换到 " + newChannel);
-    
+
     // 阻止切换到某些频道
     if (newChannel.equals("admin") && !player.hasPermission("chat.admin")) {
         event.setCancelled(true);
@@ -134,10 +134,10 @@ api.registerPrivateMessageListener(event -> {
     OnlineUser sender = event.getSender();
     List<OnlineUser> recipients = event.getRecipients();
     String message = event.getMessage();
-    
+
     // 记录私聊消息
-    System.out.println("私聊: " + sender.getUsername() + " -> " + 
-                      recipients.stream().map(OnlineUser::getUsername).collect(Collectors.joining(", ")) + 
+    System.out.println("私聊: " + sender.getUsername() + " -> " +
+                      recipients.stream().map(OnlineUser::getUsername).collect(Collectors.joining(", ")) +
                       ": " + message);
 });
 ```
@@ -150,7 +150,7 @@ api.registerMessageFilterListener(event -> {
         // 处理脏话过滤
         OnlineUser sender = event.getSender();
         sender.sendMessage("请注意你的言辞！");
-        
+
         // 可以修改过滤后的消息
         event.setFilteredMessage("[已屏蔽]");
     }
@@ -164,7 +164,7 @@ api.registerMessageFilterListener(event -> {
 - **可修改**: 发送者、消息内容、目标频道
 - **可取消**: 是
 
-### ChannelSwitchEvent  
+### ChannelSwitchEvent
 - **触发时机**: 玩家切换频道时
 - **可修改**: 目标频道
 - **可取消**: 是
@@ -214,7 +214,7 @@ api.sendPrivateMessage(sender, recipients, message)
 api.registerChannelSwitchListener(event -> {
     OnlineUser player = event.getPlayer();
     String targetChannel = event.getNewChannelId();
-    
+
     // 检查权限
     if (!player.hasPermission("huskchat.channel." + targetChannel + ".join")) {
         event.setCancelled(true);
@@ -240,21 +240,21 @@ public void onDisable() {
 
 ```java
 public class ExamplePlugin extends JavaPlugin implements Listener {
-    
+
     private HuskChatExtendedAPI api;
-    
+
     @Override
     public void onEnable() {
         // 获取API实例
         api = HuskChatExtendedAPI.getInstance();
-        
+
         // 注册事件监听器
         api.registerChatMessageListener(this::onChatMessage);
         api.registerChannelSwitchListener(this::onChannelSwitch);
-        
+
         getLogger().info("示例插件已启用！");
     }
-    
+
     private void onChatMessage(ChatMessageEvent event) {
         // 为VIP玩家的消息添加特效
         OnlineUser sender = event.getSender();
@@ -263,17 +263,17 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
             event.setMessage("✨ " + message + " ✨");
         }
     }
-    
+
     private void onChannelSwitch(ChannelSwitchEvent event) {
         // 欢迎玩家进入新频道
         OnlineUser player = event.getPlayer();
         String channelId = event.getNewChannelId();
-        
+
         Bukkit.getScheduler().runTaskLater(this, () -> {
             player.sendMessage("欢迎来到 " + channelId + " 频道！");
         }, 20L); // 1秒后发送
     }
-    
+
     @Override
     public void onDisable() {
         // 清理资源
@@ -285,8 +285,168 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
 }
 ```
 
+## 玩家状态集成 API
+
+HuskChat Remake 新增了强大的玩家状态集成功能：
+
+### 获取玩家信息
+
+```java
+// 获取玩家详细信息
+PlayerInfo info = api.getPlayerInfo(player);
+
+// 检查玩家状态
+double health = info.getHealth();
+boolean isLowHealth = info.isLowHealth();
+boolean isInCombat = info.isInCombat();
+PlayerLocationChangeEvent.PlayerLocation location = info.getLocation();
+```
+
+### 命令执行 API
+
+```java
+// 代表玩家执行聊天命令
+api.executeChatCommand(player, "/channel", "global")
+    .thenAccept(success -> {
+        if (success) {
+            player.sendMessage("命令执行成功！");
+        }
+    });
+
+// 验证命令权限
+boolean hasPermission = api.validateCommandPermission(player, "/msg");
+```
+
+### 玩家状态管理
+
+```java
+// 更新玩家状态
+api.updatePlayerStatus(player,
+    PlayerStatusChangeEvent.StatusType.COMBAT,
+    true,
+    "进入战斗",
+    15000) // 15秒后自动解除
+    .thenAccept(success -> {
+        if (success) {
+            player.sendMessage("战斗状态已设置");
+        }
+    });
+
+// 检查聊天条件
+HuskChatExtendedAPI.ChatConditionResult result = api.checkChatConditions(player, "global");
+if (!result.isAllowed()) {
+    player.sendMessage("无法聊天: " + result.getReason());
+}
+```
+
+### 基于位置的功能
+
+```java
+// 获取附近的玩家
+List<OnlineUser> nearbyPlayers = api.getNearbyPlayers(player, 50.0);
+
+// 检查玩家是否在同一区域
+boolean sameRegion = api.arePlayersInSameRegion(player1, player2);
+
+// 创建基于位置的频道
+String locationChannel = api.createLocationBasedChannel(player, 100.0);
+```
+
+## 事件监听器扩展
+
+### 新增事件监听器
+
+```java
+// 监听玩家生命值变化
+api.registerPlayerHealthChangeListener(event -> {
+    if (event.isAboutToDie()) {
+        event.getPlayer().sendMessage("§c危险！你即将死亡！");
+    }
+});
+
+// 监听玩家位置变化
+api.registerPlayerLocationChangeListener(event -> {
+    if (event.isCrossWorld()) {
+        OnlineUser player = event.getPlayer();
+        player.sendMessage("欢迎来到 " + event.getNewLocation().getWorld());
+    }
+});
+
+// 监听玩家状态变化
+api.registerPlayerStatusChangeListener(event -> {
+    if (event.getStatusType() == PlayerStatusChangeEvent.StatusType.COMBAT) {
+        boolean inCombat = (Boolean) event.getNewValue();
+        if (inCombat) {
+            event.getPlayer().sendMessage("§c进入战斗模式！");
+        }
+    }
+});
+
+// 监听命令执行
+api.registerChatCommandListener(event -> {
+    if (event.getPhase() == ChatCommandEvent.ExecutionPhase.PRE) {
+        // 命令执行前的处理
+        getLogger().info("玩家执行命令: " + event.getCommand());
+    }
+});
+```
+
+## 高级用法示例
+
+### 基于生命值的聊天限制
+
+```java
+api.registerChatMessageListener(event -> {
+    OnlineUser sender = event.getSender();
+
+    // 检查生命值限制
+    if (sender.isLowHealth() && !sender.hasPermission("chat.lowhealth.bypass")) {
+        if (event.getChannelId().equals("staff")) {
+            event.setCancelled(true);
+            sender.sendMessage("§c生命值过低，无法使用员工频道！");
+        }
+    }
+});
+```
+
+### 战斗状态聊天限制
+
+```java
+api.registerChatMessageListener(event -> {
+    OnlineUser sender = event.getSender();
+
+    if (sender.isInCombat()) {
+        // 战斗中只能使用本地频道
+        if (!event.getChannelId().equals("local")) {
+            event.setCancelled(true);
+            sender.sendMessage("§c战斗中只能使用本地频道！");
+        }
+    }
+});
+```
+
+### 自动频道切换
+
+```java
+api.registerPlayerLocationChangeListener(event -> {
+    if (event.isCrossWorld()) {
+        OnlineUser player = event.getPlayer();
+        String worldName = event.getNewLocation().getWorld();
+
+        // 根据世界自动切换频道
+        String worldChannel = "world_" + worldName;
+        if (api.getChannels().contains(worldChannel)) {
+            api.switchPlayerChannel(player, worldChannel,
+                ChannelSwitchEvent.SwitchReason.API_CALL);
+        }
+    }
+});
+```
+
 ## 更多信息
 
 - [事件系统详细文档](Events.md)
+- [增强示例插件](Enhanced-Example-Plugin.md)
+- [开发者指南](Developer-Guide.md)
 - [频道配置指南](Channels.md)
 - [命令参考](Commands.md)

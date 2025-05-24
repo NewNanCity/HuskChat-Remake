@@ -109,7 +109,7 @@ public class VelocityHuskChat implements HuskChat, VelocityEventProvider {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         // Load config and locale files
         this.loadConfig();
-        
+
         //load filters
         this.loadFilters();
 
@@ -148,6 +148,9 @@ public class VelocityHuskChat implements HuskChat, VelocityEventProvider {
                         .mapToInt(channel -> channel.getShortcutCommands().size()).sum()));
 
         VelocityHuskChatAPI.register(this);
+
+        // Register Extended API and player status listener
+        registerExtendedAPI();
 
         // Initialise metrics and log
         this.metrics.make(this, METRICS_ID);
@@ -276,5 +279,19 @@ public class VelocityHuskChat implements HuskChat, VelocityEventProvider {
     @Override
     public HuskChat getPlugin() {
         return this;
+    }
+
+    private void registerExtendedAPI() {
+        // Register Extended API
+        net.william278.huskchat.api.VelocityHuskChatExtendedAPI extendedAPI =
+            new net.william278.huskchat.api.VelocityHuskChatExtendedAPI(this);
+        net.william278.huskchat.api.HuskChatExtendedAPI.setInstance(extendedAPI);
+
+        // Register player status listener
+        net.william278.huskchat.listener.VelocityPlayerStatusListener statusListener =
+            new net.william278.huskchat.listener.VelocityPlayerStatusListener(this, extendedAPI);
+        getProxyServer().getEventManager().register(this, statusListener);
+
+        log(Level.INFO, "Registered Extended API and player status listener");
     }
 }

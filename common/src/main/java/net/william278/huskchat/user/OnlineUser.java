@@ -32,7 +32,7 @@ import java.util.UUID;
 /**
  * Abstract cross-platform Player object
  */
-public abstract class OnlineUser extends User {
+public abstract class OnlineUser extends User implements PlayerInfo {
 
     protected HuskChat plugin;
 

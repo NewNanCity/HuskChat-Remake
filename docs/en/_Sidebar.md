@@ -19,6 +19,10 @@
 * ⚡ [[Events]]
 * 👨‍💻 [[Developer Guide]]
 * 📝 [[Example Plugin]]
+* 🔧 [[Enhanced Example Plugin]]
+* 📋 [[Migration Guide]]
+* 🧪 [[Cross-Platform Testing]]
+* 📊 [[Cross-Platform Implementation Summary]]
 
 ## Links
 * 💻 [GitHub](https://github.com/Gk0Wk/HuskChat-Remake)

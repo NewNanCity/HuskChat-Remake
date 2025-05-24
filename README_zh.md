@@ -49,6 +49,10 @@
 
 **🚀 增强的API接口** &mdash; 提供统一的消息发送、频道管理和用户管理API
 
+**🚀 玩家状态集成** &mdash; 生命值、位置、战斗状态等Minecraft特定数据集成
+
+**🚀 命令执行API** &mdash; 程序化命令执行，支持权限验证和事件处理
+
 **🚀 现代化架构** &mdash; 基于最新的Minecraft服务器平台进行优化
 
 **🚀 更好的可扩展性** &mdash; 插件式设计，支持自定义扩展和集成
@@ -107,6 +111,13 @@ api.registerChatMessageListener(event -> {
     }
 });
 
+// 监听玩家生命值变化
+api.registerPlayerHealthChangeListener(event -> {
+    if (event.isLowHealth()) {
+        event.getPlayer().sendMessage("警告：生命值过低！");
+    }
+});
+
 // 监听频道切换
 api.registerChannelSwitchListener(event -> {
     player.sendMessage("欢迎来到 " + event.getNewChannelId() + " 频道！");
@@ -129,6 +140,23 @@ api.sendPrivateMessage(sender, List.of("PlayerName"), "Hello!");
 
 // 发送频道消息
 api.sendChannelMessage("global", "系统公告", null);
+```
+
+### 🎮 玩家状态集成
+```java
+// 获取玩家信息
+PlayerInfo info = api.getPlayerInfo(player);
+boolean isLowHealth = info.isLowHealth();
+boolean isInCombat = info.isInCombat();
+
+// 程序化执行命令
+api.executeChatCommand(player, "/channel", "staff");
+
+// 检查聊天条件
+ChatConditionResult result = api.checkChatConditions(player, "global");
+if (!result.isAllowed()) {
+    player.sendMessage("无法聊天: " + result.getReason());
+}
 ```
 
 ## 构建

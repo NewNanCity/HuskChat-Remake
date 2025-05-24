@@ -97,6 +97,9 @@ public final class BungeeHuskChat extends Plugin implements HuskChat, BungeeEven
         // Load API
         BungeeHuskChatAPI.register(this);
 
+        // Register Extended API and player status listener
+        registerExtendedAPI();
+
         // Setup player data getter
         if (isPluginPresent("LuckPerms")) {
             this.dataGetter = new LuckPermsDataGetter();
@@ -247,6 +250,20 @@ public final class BungeeHuskChat extends Plugin implements HuskChat, BungeeEven
     @Override
     public HuskChat getPlugin() {
         return this;
+    }
+
+    private void registerExtendedAPI() {
+        // Register Extended API
+        net.william278.huskchat.api.BungeeHuskChatExtendedAPI extendedAPI =
+            new net.william278.huskchat.api.BungeeHuskChatExtendedAPI(this);
+        net.william278.huskchat.api.HuskChatExtendedAPI.setInstance(extendedAPI);
+
+        // Register player status listener
+        net.william278.huskchat.listener.BungeePlayerStatusListener statusListener =
+            new net.william278.huskchat.listener.BungeePlayerStatusListener(this, extendedAPI);
+        getProxy().getPluginManager().registerListener(this, statusListener);
+
+        log(Level.INFO, "Registered Extended API and player status listener");
     }
 
 }
