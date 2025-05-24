@@ -22,10 +22,15 @@ package net.william278.huskchat.event;
 import net.william278.huskchat.BukkitHuskChat;
 import net.william278.huskchat.user.OnlineUser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Bukkit事件提供者接口 - 为Bukkit平台实现事件触发
+ * Bukkit event provider interface - implements event triggering for Bukkit platform
+ */
 public interface BukkitEventProvider extends EventProvider {
 
     @Override
@@ -59,6 +64,61 @@ public interface BukkitEventProvider extends EventProvider {
                                                                               @NotNull String message) {
         final CompletableFuture<BroadcastMessageEvent> completableFuture = new CompletableFuture<>();
         final BukkitBroadcastMessageEvent event = new BukkitBroadcastMessageEvent(sender, message);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<ChannelSwitchEvent> fireChannelSwitchEvent(@NotNull OnlineUser player,
+                                                                         @Nullable String previousChannelId,
+                                                                         @NotNull String newChannelId,
+                                                                         @NotNull ChannelSwitchEvent.SwitchReason reason) {
+        final CompletableFuture<ChannelSwitchEvent> completableFuture = new CompletableFuture<>();
+        final BukkitChannelSwitchEvent event = new BukkitChannelSwitchEvent(player, previousChannelId, newChannelId, reason);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerJoinChannelEvent> firePlayerJoinChannelEvent(@NotNull OnlineUser player,
+                                                                                 @NotNull String channelId,
+                                                                                 @NotNull PlayerJoinChannelEvent.JoinReason reason) {
+        final CompletableFuture<PlayerJoinChannelEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerJoinChannelEvent event = new BukkitPlayerJoinChannelEvent(player, channelId, reason);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<PlayerLeaveChannelEvent> firePlayerLeaveChannelEvent(@NotNull OnlineUser player,
+                                                                                   @NotNull String channelId,
+                                                                                   @NotNull PlayerLeaveChannelEvent.LeaveReason reason) {
+        final CompletableFuture<PlayerLeaveChannelEvent> completableFuture = new CompletableFuture<>();
+        final BukkitPlayerLeaveChannelEvent event = new BukkitPlayerLeaveChannelEvent(player, channelId, reason);
+        getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getServer().getPluginManager().callEvent(event);
+            completableFuture.complete(event);
+        });
+        return completableFuture;
+    }
+
+    @Override
+    default CompletableFuture<MessageFilterEvent> fireMessageFilterEvent(@NotNull OnlineUser sender,
+                                                                         @NotNull String originalMessage,
+                                                                         @NotNull String filteredMessage,
+                                                                         @NotNull MessageFilterEvent.FilterType filterType,
+                                                                         @NotNull String filterName) {
+        final CompletableFuture<MessageFilterEvent> completableFuture = new CompletableFuture<>();
+        final BukkitMessageFilterEvent event = new BukkitMessageFilterEvent(sender, originalMessage, filteredMessage, filterType, filterName);
         getPlugin().getServer().getScheduler().runTask(getPlugin(), () -> {
             getPlugin().getServer().getPluginManager().callEvent(event);
             completableFuture.complete(event);

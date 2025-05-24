@@ -21,16 +21,57 @@ package net.william278.huskchat.event;
 
 import net.william278.huskchat.user.OnlineUser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * 事件提供者接口 - 定义所有HuskChat事件的触发方法
+ * Event provider interface - defines methods for triggering all HuskChat events
+ */
 public interface EventProvider {
 
+    /**
+     * 触发聊天消息事件
+     * Fire chat message event
+     */
     CompletableFuture<ChatMessageEvent> fireChatMessageEvent(@NotNull OnlineUser player, @NotNull String message, @NotNull String channelId);
 
+    /**
+     * 触发私聊消息事件
+     * Fire private message event
+     */
     CompletableFuture<PrivateMessageEvent> firePrivateMessageEvent(@NotNull OnlineUser sender, @NotNull List<OnlineUser> receivers, @NotNull String message);
 
+    /**
+     * 触发广播消息事件
+     * Fire broadcast message event
+     */
     CompletableFuture<BroadcastMessageEvent> fireBroadcastMessageEvent(@NotNull OnlineUser sender, @NotNull String message);
+
+    /**
+     * 触发频道切换事件
+     * Fire channel switch event
+     */
+    CompletableFuture<ChannelSwitchEvent> fireChannelSwitchEvent(@NotNull OnlineUser player, @Nullable String previousChannelId, @NotNull String newChannelId, @NotNull ChannelSwitchEvent.SwitchReason reason);
+
+    /**
+     * 触发玩家加入频道事件
+     * Fire player join channel event
+     */
+    CompletableFuture<PlayerJoinChannelEvent> firePlayerJoinChannelEvent(@NotNull OnlineUser player, @NotNull String channelId, @NotNull PlayerJoinChannelEvent.JoinReason reason);
+
+    /**
+     * 触发玩家离开频道事件
+     * Fire player leave channel event
+     */
+    CompletableFuture<PlayerLeaveChannelEvent> firePlayerLeaveChannelEvent(@NotNull OnlineUser player, @NotNull String channelId, @NotNull PlayerLeaveChannelEvent.LeaveReason reason);
+
+    /**
+     * 触发消息过滤事件
+     * Fire message filter event
+     */
+    CompletableFuture<MessageFilterEvent> fireMessageFilterEvent(@NotNull OnlineUser sender, @NotNull String originalMessage, @NotNull String filteredMessage, @NotNull MessageFilterEvent.FilterType filterType, @NotNull String filterName);
 
 }

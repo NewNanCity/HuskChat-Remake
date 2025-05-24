@@ -1,9 +1,9 @@
-## Guides
+## 指南
 * 📚 [[Setup]]
 * 📝 [[Config Files]]
 * 🖥️ [[Commands]]
 
-## Documentation
+## 文档
 * 📺 [[Channels]]
 * ✍️ [[Formatting]]
 * ✉️ [[Group Messages]]
@@ -14,16 +14,17 @@
 * 🔵 [[Discord Hook]]
 * 🌐 [[Translations]]
 
-## Developer Resources (HuskChat Remake)
+## 开发者资源 (HuskChat Remake)
 * 🚀 [[API Guide]]
 * ⚡ [[Events]]
 * 👨‍💻 [[Developer Guide]]
+* 📝 [[Example Plugin]]
 
-## Links
-* 💻 [GitHub](https://github.com/NewNanCity/HuskChat-Remake)
-* 📂 [Downloads](https://www.spigotmc.org/resources/huskchat.94496/)
+## 链接
+* 💻 [GitHub](https://github.com/Gk0Wk/HuskChat-Remake)
+* 📂 [下载](https://www.spigotmc.org/resources/huskchat.94496/)
   * 🚰 [Spigot](https://www.spigotmc.org/resources/huskchat.94496/)
   * 🛒 [Polymart](https://polymart.org/resource/huskchat.1217)
   * 🔧 [Modrinth](https://modrinth.com/plugin/huskchat)
   * 🛫 [Hangar](https://hangar.papermc.io/William278/HuskChat)
-* 💬 [Discord Support](https://discord.gg/tVYhJfyDWG)
+* 💬 [Discord 支持](https://discord.gg/tVYhJfyDWG)

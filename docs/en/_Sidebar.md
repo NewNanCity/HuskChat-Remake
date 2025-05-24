@@ -1,6 +1,3 @@
-# [![HuskChat banner](https://raw.githubusercontent.com/WiIIiam278/HuskChat/master/images/banner.png)](https://github.com/WiIIiam278/HuskChat)
-Welcome! This is the plugin documentation for HuskChat&mdash;the no-frills chat plugin for Minecraft: Java Edition servers and networks. Please click through to the topic you'd like to read about.
-
 ## Guides
 * 📚 [[Setup]]
 * 📝 [[Config Files]]
@@ -15,9 +12,16 @@ Welcome! This is the plugin documentation for HuskChat&mdash;the no-frills chat 
 * ⚙️ [[Backend Chat Entry]]
 * 📜 [[Join and Quit Messages]]
 * 🔵 [[Discord Hook]]
+* 🌐 [[Translations]]
+
+## Developer Resources (HuskChat Remake)
+* 🚀 [[API Guide]]
+* ⚡ [[Events]]
+* 👨‍💻 [[Developer Guide]]
+* 📝 [[Example Plugin]]
 
 ## Links
-* 💻 [GitHub](https://github.com/WiIIiam278/HuskChat)
+* 💻 [GitHub](https://github.com/Gk0Wk/HuskChat-Remake)
 * 📂 [Downloads](https://www.spigotmc.org/resources/huskchat.94496/)
   * 🚰 [Spigot](https://www.spigotmc.org/resources/huskchat.94496/)
   * 🛒 [Polymart](https://polymart.org/resource/huskchat.1217)

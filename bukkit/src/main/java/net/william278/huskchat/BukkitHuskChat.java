@@ -117,8 +117,8 @@ public class BukkitHuskChat extends JavaPlugin implements HuskChat, BukkitEventP
                         new ShortcutCommand(command, channel.getId(), this), this
                 )));
 
-        // Register API
-        BukkitHuskChatAPI.register(this);
+        // Register Extended API
+        net.william278.huskchat.api.BukkitHuskChatExtendedAPI.register(this);
 
         // Initialise metrics and log
         this.checkForUpdates();

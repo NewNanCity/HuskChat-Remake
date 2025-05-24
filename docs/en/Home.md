@@ -1,3 +1,6 @@
+# [![HuskChat banner](https://raw.githubusercontent.com/NewNanCity/HuskChat-Remake/master/images/banner.png)](https://github.com/NewNanCity/HuskChat-Remake)
+Welcome! This is the plugin documentation for HuskChat&mdash;the no-frills chat plugin for Minecraft: Java Edition servers and networks. Please click through to the topic you'd like to read about.
+
 ## Guides
 * 📚 [[Setup]]
 * 📝 [[Config Files]]
@@ -12,12 +15,6 @@
 * ⚙️ [[Backend Chat Entry]]
 * 📜 [[Join and Quit Messages]]
 * 🔵 [[Discord Hook]]
-* 🌐 [[Translations]]
-
-## Developer Resources (HuskChat Remake)
-* 🚀 [[API Guide]]
-* ⚡ [[Events]]
-* 👨‍💻 [[Developer Guide]]
 
 ## Links
 * 💻 [GitHub](https://github.com/NewNanCity/HuskChat-Remake)

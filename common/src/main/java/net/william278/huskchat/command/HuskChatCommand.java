@@ -60,7 +60,7 @@ public class HuskChatCommand extends CommandBase {
                         AboutMenu.Credit.of("Wirayuda5620").description("Bahasa Indonesia (id-id)"))
                 .buttons(
                         AboutMenu.Link.of("https://william278.net/docs/huskchat").text("Documentation").icon("⛏"),
-                        AboutMenu.Link.of("https://github.com/WiIIiam278/HuskChat/issues").text("Issues").icon("❌").color(TextColor.color(0xff9f0f)),
+                        AboutMenu.Link.of("https://github.com/NewNanCity/HuskChat-Remake/issues").text("Issues").icon("❌").color(TextColor.color(0xff9f0f)),
                         AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").text("Discord").icon("⭐").color(TextColor.color(0x6773f5)))
                 .build();
         this.operatorOnly = true;
