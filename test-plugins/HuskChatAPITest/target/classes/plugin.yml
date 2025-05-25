@@ -1,0 +1,44 @@
+name: HuskChatAPITest
+version: 1.0.0
+main: net.william278.huskchat.test.HuskChatAPITestPlugin
+api-version: '1.20'
+author: HuskChat Test Team
+description: HuskChat API Test Plugin
+website: https://github.com/NewNanCity/HuskChat-Remake
+
+depend:
+  - HuskChat
+
+commands:
+  hctest:
+    description: HuskChat API测试命令
+    usage: /hctest <test> [args...]
+    permission: huskchat.test.admin
+    aliases: [huskchattest, hct]
+  
+  hcapi:
+    description: HuskChat API功能演示
+    usage: /hcapi <function> [args...]
+    permission: huskchat.test.api
+    aliases: [huskchatapi, hca]
+
+permissions:
+  huskchat.test.*:
+    description: 所有HuskChat测试权限
+    default: op
+    children:
+      huskchat.test.admin: true
+      huskchat.test.api: true
+      huskchat.test.events: true
+      
+  huskchat.test.admin:
+    description: HuskChat测试管理员权限
+    default: op
+    
+  huskchat.test.api:
+    description: HuskChat API使用权限
+    default: op
+    
+  huskchat.test.events:
+    description: HuskChat事件测试权限
+    default: op

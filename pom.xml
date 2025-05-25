@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.william278.huskchat</groupId>
+    <artifactId>huskchat-remake</artifactId>
+    <version>3.0.4</version>
+    <packaging>pom</packaging>
+
+    <name>HuskChat Remake</name>
+    <description>A simple &amp; customizable no-frills Minecraft chat system</description>
+    <url>https://github.com/NewNanCity/HuskChat-Remake</url>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <!-- Plugin Properties -->
+        <plugin.version>3.0.4</plugin.version>
+        <plugin.description>A simple &amp; customizable no-frills Minecraft chat system</plugin.description>
+
+        <!-- Platform Versions -->
+        <velocity.api.version>3.3.0</velocity.api.version>
+        <velocity.minimum.build>329</velocity.minimum.build>
+        <spigot.api.version>1.17.1-R0.1-SNAPSHOT</spigot.api.version>
+        <bungeecord.api.version>1.19-R0.1-SNAPSHOT</bungeecord.api.version>
+
+        <!-- Dependency Versions -->
+        <adventure.version>4.17.0</adventure.version>
+        <adventure.platform.version>4.3.4</adventure.platform.version>
+        <bstats.version>3.0.2</bstats.version>
+        <lombok.version>1.18.34</lombok.version>
+        <annotations.version>24.1.0</annotations.version>
+        <junit.version>5.10.2</junit.version>
+
+        <!-- Library Versions -->
+        <commons-io.version>2.16.1</commons-io.version>
+        <minedown.version>1.7.3-SNAPSHOT</minedown.version>
+        <profanity-checker.version>3.0</profanity-checker.version>
+        <desertwell.version>2.0.4</desertwell.version>
+        <mcdiscordreserializer.version>4.3.0</mcdiscordreserializer.version>
+        <configlib.version>4.5.0</configlib.version>
+        <placeholderapi.version>2.11.6</placeholderapi.version>
+        <luckperms.version>5.4</luckperms.version>
+        <papiproxybridge.version>1.5</papiproxybridge.version>
+        <spicord.version>v5-SNAPSHOT</spicord.version>
+        <jda.version>5.0.0-beta.4</jda.version>
+    </properties>
+
+    <modules>
+        <module>bukkit</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>velocity-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>placeholderapi-repo</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+        <repository>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Adventure API -->
+            <dependency>
+                <groupId>net.kyori</groupId>
+                <artifactId>adventure-api</artifactId>
+                <version>${adventure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.kyori</groupId>
+                <artifactId>adventure-platform-api</artifactId>
+                <version>${adventure.platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.kyori</groupId>
+                <artifactId>adventure-platform-bukkit</artifactId>
+                <version>${adventure.platform.version}</version>
+            </dependency>
+
+            <!-- Annotations -->
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${annotations.version}</version>
+            </dependency>
+
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- Testing -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.4.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <configuration>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.1.2</version>
+                    <configuration>
+                        <useSystemClassLoader>false</useSystemClassLoader>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>filter-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.json</include>
+                                        <include>**/*.yml</include>
+                                        <include>**/*.yaml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>false</filtering>
+                                    <excludes>
+                                        <exclude>**/*.json</exclude>
+                                        <exclude>**/*.yml</exclude>
+                                        <exclude>**/*.yaml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <configuration>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>william278</id>
+            <name>William278</name>
+            <url>https://william278.net</url>
+            <roles>
+                <role>Original Author</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/NewNanCity/HuskChat-Remake.git</connection>
+        <developerConnection>scm:git:ssh://github.com:NewNanCity/HuskChat-Remake.git</developerConnection>
+        <url>https://github.com/NewNanCity/HuskChat-Remake/tree/master</url>
+    </scm>
+</project>
