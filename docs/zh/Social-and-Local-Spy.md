@@ -1,7 +1,6 @@
-HuskChat provides `/socialspy` and `/localspy` commands. Players with permission can toggle `socialspy` to see the
-private messages of users. 
+HuskChat 提供了 `/socialspy` 和 `/localspy` 命令。拥有权限的玩家可以切换 `socialspy`，以查看其他用户的私聊消息。
 
-On servers running HuskChat on proxy-server setups, the `/localspy` command is also available. This allows players with permission to view messages sent in Local chat channels on other servers, including ones that passthrough messages locally.
+在代理服务器环境下运行 HuskChat 时，还可以使用 `/localspy` 命令。拥有权限的玩家可以查看其他服务器本地聊天频道中发送的消息，包括本地透传的消息。
 
-## Bypassing Social Spy
-If you have the `huskchat.command.socialspy.bypass` permission, you can bypass having your messages be spied on. Note though that other players with the `huskchat.command.socialspy.bypass` permission bypass the bypass and will be able to see your private messages.
+## 绕过社交监听
+如果你拥有 `huskchat.command.socialspy.bypass` 权限，你的消息将不会被监听。但请注意，其他同样拥有 `huskchat.command.socialspy.bypass` 权限的玩家可以绕过该保护，依然能够看到你的私聊消息。

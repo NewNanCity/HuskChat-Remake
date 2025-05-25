@@ -1,26 +1,25 @@
-The channel `format` defines how messages sent on that channel will be formatted. The content of the message sent by the player itself is always appended after the formatting. Note that any uncleared formatting will persist and apply to the message contents. The format of private messages, group private messages and broadcasts can also be customized.
+频道的 `format` 属性定义了该频道消息的格式。玩家实际发送的消息内容会自动追加在格式内容之后。请注意，任何未清除的格式代码会持续作用于消息内容。私聊、群聊和广播的消息格式也可以自定义。
 
 ## MineDown
-You can make use of [MineDown formatting](https://github.com/Phoenix616/MineDown) to use modern (1.16+) hexadecimal colors and easily
-make use of advanced text effects such as gradients. You can embed this formatting within the prefix and suffix contents of LuckPerms groups as well.
+你可以使用 [MineDown 格式](https://github.com/Phoenix616/MineDown) 来实现现代（1.16+）十六进制颜色，并轻松使用渐变等高级文本效果。你也可以在 LuckPerms 组的前缀和后缀中嵌入这些格式。
 
-## Placeholders
-Within channel formats you can make use of the following placeholders, which will be replaced with the formatted text.
+## 占位符
+在频道格式中，你可以使用以下占位符，这些占位符会被格式化后的文本替换。
 
-### Regular placeholders
-* `%name%` - Username
-* `%full_name%` - Role prefix, player username & role suffix
-* `%prefix%` - Role prefix
-* `%suffix%` - Role suffix
-* `%role%` - User's (primary) group name
-* `%role_display_name%` - User's (primary) group display name
-* `%ping%` - User's ping
-* `%uuid%` - User's UUID
-* `%server%` - Server the user is on (on single-server setups, this is always `server`)
-* `%local_players_online%` - Number of players on the server the user is on
+### 常规占位符
+* `%name%` - 用户名
+* `%full_name%` - 角色前缀、玩家用户名和角色后缀
+* `%prefix%` - 角色前缀
+* `%suffix%` - 角色后缀
+* `%role%` - 用户（主）组名
+* `%role_display_name%` - 用户（主）组显示名
+* `%ping%` - 用户延迟
+* `%uuid%` - 用户 UUID
+* `%server%` - 用户所在服务器（单服环境下始终为 `server`）
+* `%local_players_online%` - 用户所在服务器的在线玩家数
 
-### Time placeholders
-These display the current system time.
+### 时间占位符
+这些占位符显示当前系统时间。
 * `%timestamp%` - yyyy/MM/dd HH:mm:ss
 * `%current_time%` - HH:mm:ss
 * `%current_time_short%` - HH:mm
@@ -30,16 +29,16 @@ These display the current system time.
 * `%current_date_month%` - MM
 * `%current_date_year%` - yyyy
 
-### PlaceholderAPI support
-By installing [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on both your proxy (Bungee or Velocity) and backend (Paper or Fabric) servers, you can use PlaceholderAPI placeholders in channel and message formats.
+### PlaceholderAPI 支持
+在你的代理（Bungee 或 Velocity）和后端（Paper 或 Fabric）服务器上安装 [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) 后，可以在频道和消息格式中使用 PlaceholderAPI 占位符。
 
-### Private message placeholders
-In private messages, the placeholders are applied to the sender of the message for inbound messages, and the receiver for outbound messages. You can use all placeholders above after the `sender_` or `receiver_` prefix. (e.g. `%sender_(placeholder)%` and `%receiver_(placeholder)%`).
+### 私聊消息占位符
+在私聊消息中，入站消息的占位符应用于消息发送者，出站消息的占位符应用于接收者。你可以在上述所有占位符前加 `sender_` 或 `receiver_` 前缀使用（如 `%sender_(占位符)%` 和 `%receiver_(占位符)%`）。
 
-There are additional placeholders for group private messages:
-* `%group_amount%` (number of members in the group private message)
-* `%group_amount_subscript%` (number of members in the group private message, in subscript font)
-* `%group_members_comma_separated%` (comma separated list of members in the group private message)
-* `%group_members%` (newline separated list of members in the group private message)
+群聊消息还支持以下额外占位符：
+* `%group_amount%`（群聊成员数量）
+* `%group_amount_subscript%`（群聊成员数量，下标字体）
+* `%group_members_comma_separated%`（群聊成员逗号分隔列表）
+* `%group_members%`（群聊成员换行分隔列表）
 
-The social spy message formatting lets you format both the message sender and receiver with the same placeholders listed above. The sender and receiver are disambiguated with prefixes, so you can use both; i.e. `%sender_(placeholder)%` and `%receiver_(placeholder)%`.
+社交监听消息格式允许你同时格式化消息发送者和接收者，使用上述同样的占位符。发送者和接收者通过前缀区分，因此你可以同时使用 `%sender_(占位符)%` 和 `%receiver_(占位符)%`。

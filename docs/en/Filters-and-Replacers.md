@@ -12,11 +12,11 @@ Chat filters will prevent a user from sending a message based on certain conditi
 * `caps_filter` - Prevents players from sending messages that are comprised of over a certain specifiable percentage (as a decimal number, 0.0 to 1.0 representing 0% to 100%)
 * `spam_filter` - Prevents players from sending messages too fast in chat (i.e. rate limits them). Specify how many messages players should be able to send in a period.
 * `profanity_filter` - Uses a profanity-check machine learning algorithm to determine if a message contains English profanity. See below for more information on how to set this up as it requires a bit more work.
-* `repeat_filter` - Prevents players from sending repeat messages. Checks against a specifiable number of the players previous messages.
-* `ascii_filter` - Prevents players from using non-ASCII (i.e. Unicode/UTF-8) characters in chat. If members of your server need to use non-latin characters when talking in your community's language, you probably want to turn this off.
+* `repeat_filter` - Prevents players from sending repeat messages. Checks against a specifiable number of the players previous messages (default: 2).
+* `ascii_filter` - Prevents players from using non-ASCII (i.e. Unicode/UTF-8) characters in chat. **Note: This filter is disabled by default** to support international characters including Chinese, Japanese, Korean, and other Unicode characters. Enable it only if you need to restrict chat to ASCII-only characters.
 
 ### Bypassing filters
-You can use the `huskchat.bypass_filters` permission to allow a user's messages to not be run through the filters (although messages will still be run through replacers). 
+You can use the `huskchat.bypass_filters` permission to allow a user's messages to not be run through the filters (although messages will still be run through replacers).
 
 In addition, you can use the `huskchat.ignore_filters.<filter_name>` node to let users bypass specific filters. The bypass will work in all channels.
 * `huskchat.ignore_filters.advertising` - Advertising filter
@@ -30,7 +30,7 @@ In addition, you can use the `huskchat.ignore_filters.<filter_name>` node to let
 You can also disable individual types of replacers with the following permissions:
 * `huskchat.ignore_filters.emoji_replacer` - Emoji replacer
 
-## Profanity filter 
+## Profanity filter
 The `profanity_filter` uses a Python machine learning algorithm (alt-profanity-check) that uses Scikit-learn to predict whether messages contain profanity. It's imperfect and unable to catch elongated or modified slurs, but it's quite effective (and let's face it, if people are going to be bad actors and use bad language, they'll find a way around any swear filter). The profanity checker is only trained on English words.
 
 ### Shared hosts

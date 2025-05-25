@@ -1,15 +1,15 @@
-Channels are what players talk in and can be switched between using the /channel command or specialized channel shortcut command. By default, HuskChat has the following channels setup, perfect for a typical setup:
+频道是玩家进行聊天的空间，可以通过 `/channel` 命令或专用频道快捷命令进行切换。默认情况下，HuskChat 已设置以下频道，适用于典型的服务器环境：
 
-* `local` - Local-scoped channel with `/local`, `/l` shortcut commands, for sending messages to players on the same server.
-* `global` (default channel) - Global-scoped channel with `/global`, `/g` shortcut commands, for sending messages across the network.
-* `staff` - Global-scoped channel with `/staff`, `/sc` shortcut commands. Great for letting staff communicate easily. Players need the `huskchat.channel.staff.send` and `huskchat.channel.staff.receive` permissions to send and receive messages in this channel respectively.
-* `helpop` - Global-scoped channel with `/helpop` shortcut command. Great for letting players easily contact staff. Players need the `huskchat.channel.helpop.receive` permission to receive messages in this channel.
+* `local` - 本地频道，使用 `/local`、`/l` 快捷命令，仅向同一服务器的玩家发送消息。
+* `global`（默认频道）- 全局频道，使用 `/global`、`/g` 快捷命令，可在整个网络中发送消息。
+* `staff` - 全局频道，使用 `/staff`、`/sc` 快捷命令，方便管理团队内部沟通。玩家需要 `huskchat.channel.staff.send` 和 `huskchat.channel.staff.receive` 权限才能分别发送和接收该频道的消息。
+* `helpop` - 全局频道，使用 `/helpop` 快捷命令，方便玩家联系管理团队。玩家需要 `huskchat.channel.helpop.receive` 权限才能接收该频道的消息。
 
-### Channel config structure
-To define custom channels, put them in [`channels.yml`](config-files). Below is the specification for how this should be laid out, using a typical `staff` channel as an example.
+### 频道配置结构
+要自定义频道，请在 [`channels.yml`](config-files) 文件中进行配置。以下是一个典型 `staff` 频道的配置示例：
 
 ```yaml
-# Channel definitions
+# 频道定义
 channels:
   # ...
   - id: staff
@@ -27,35 +27,33 @@ channels:
   # ...
 ```
 
-### Channel scope
-Channel scope defines the scope by which messages are broadcast and handled by HuskChat. The following options are
-available:
+### 频道范围（Scope）
+频道范围定义了 HuskChat 广播和处理消息的范围。可用选项如下：
 
-#### Proxy scopes
-These scopes are available when running HuskChat on a proxy server (Velocity or BungeeCord/Waterfall)
+#### 代理端范围
+当 HuskChat 运行在代理服务器（Velocity 或 BungeeCord/Waterfall）时可用：
 
-* `GLOBAL` - Message is broadcast globally to those with permissions via the proxy
-* `LOCAL` - Message is broadcast via the proxy to players who have permission and are on the same server as the source
-* `PASSTHROUGH` - Message is not handled by the proxy and is instead passed to the backend server
-* `GLOBAL_PASSTHROUGH` - Message is broadcast globally to those with permissions via the proxy and is additionally passed to the backend server
-* `LOCAL_PASSTHROUGH` - Message is broadcast via the proxy to players who have permission and are on the same server as
-  the source and is additionally passed to the backend server
+* `GLOBAL` - 通过代理全局广播消息给有权限的玩家
+* `LOCAL` - 通过代理仅向同一服务器且有权限的玩家广播消息
+* `PASSTHROUGH` - 消息不由代理处理，而是直接传递给后端服务器
+* `GLOBAL_PASSTHROUGH` - 通过代理全局广播消息给有权限的玩家，并同时传递给后端服务器
+* `LOCAL_PASSTHROUGH` - 通过代理仅向同一服务器且有权限的玩家广播消息，并同时传递给后端服务器
 
-#### Single-server scopes
-These scopes are available when running HuskChat on a single-server Spigot server
+#### 单服范围
+当 HuskChat 运行在单服 Spigot 服务器时可用：
 
-* `GLOBAL` - Message is broadcast to everyone on the server
-* `PASSTHROUGH` - Message is not handled by HuskChat; chat will be delegated to other/the vanilla chat handlers
-* `GLOBAL_PASSTHROUGH` - Message is broadcast to everyone on the server and is additionally passed to other/the vanilla chat handlers (the event is not cancelled)
+* `GLOBAL` - 向服务器内所有玩家广播消息
+* `PASSTHROUGH` - HuskChat 不处理消息，聊天将交由其他/原版聊天处理器处理
+* `GLOBAL_PASSTHROUGH` - 向服务器内所有玩家广播消息，并同时传递给其他/原版聊天处理器（事件不会被取消）
 
-On a single server setup, the `LOCAL` and `LOCAL_PASSTHROUGH` scopes duplicate the `GLOBAL` and `GLOBAL_PASSTHROUGH` scopes.
+在单服环境下，`LOCAL` 和 `LOCAL_PASSTHROUGH` 的效果与 `GLOBAL` 和 `GLOBAL_PASSTHROUGH` 相同。
 
-### Default channels
-> **Note:** This feature is only used on Bungee/Velocity servers.
+### 默认频道
+> **注意：** 此功能仅在 Bungee/Velocity 服务器上使用。
 
-You must define a `default_channel` in config.yml that players will be put in when they join.
+你必须在 config.yml 中定义一个 `default_channel`，玩家加入时会自动进入该频道。
 
-Additionally, you can define server-specific defaults in the `server_default_channels` section. When a player changes to a server with a server_default_channel assigned, the player will automatically switch to the specified channel
+此外，你可以在 `server_default_channels` 部分为不同服务器定义专属默认频道。当玩家切换到设置了默认频道的服务器时，会自动切换到指定频道。
 
 ```yaml
 server_default_channels:
@@ -63,13 +61,13 @@ server_default_channels:
   bedwars: minigames
 ```
 
-On a single-server setup, this is ignored.
+在单服环境下，此设置会被忽略。
 
-### Restricted channels
-> **Note:** This feature is only used on Bungee/Velocity servers.
+### 受限频道
+> **注意：** 此功能仅在 Bungee/Velocity 服务器上使用。
 
-If you'd like to prevent players from using certain channels in certain servers, you can define `restricted_servers` in each channel (see the channel definition above for an example). Players are unable to send or receive any messages in a channel if they are connected to a server where it is restricted.
+如果你希望阻止玩家在某些服务器使用特定频道，可以在每个频道的 `restricted_servers` 中进行设置（见上方频道定义示例）。当玩家连接到受限服务器时，将无法在该频道发送或接收任何消息。
 
-Additionally, if a player changes server to one where their current channel is restricted, it will change to the `default_channel` unless it has an overriding server default channel as outlined above.
+此外，如果玩家切换到当前频道受限的服务器，将自动切换到 `default_channel`，除非有如上所述的服务器专属默认频道覆盖。
 
-You can also restrict use of the `/msg` and `/r` commands in certain servers through the `restricted_servers` section under `message_command` (in [`config.yml`](config-files)).
+你还可以通过 [`config.yml`](config-files) 中 `message_command` 下的 `restricted_servers` 部分，限制 `/msg` 和 `/r` 命令在某些服务器的使用。

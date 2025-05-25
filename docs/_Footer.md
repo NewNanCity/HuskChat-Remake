@@ -1,2 +1,2 @@
-| This documentation is available via [william278.net](https://william278.net/docs/huskchat) |
-|--------------------------------------------------------------------------------------------|
+| 本文档可通过 [william278.net](https://william278.net/docs/huskchat) 获取 |
+| ------------------------------------------------------------------------ |

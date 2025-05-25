@@ -45,7 +45,8 @@ public abstract class ChatFilter {
      * Takes a user's message and returns true if the message passes the filter
      *
      * @param message The user's message
-     * @return {@code true} if the filter allows the message to pass; {@code false} otherwise
+     * @return {@code true} if the filter allows the message to pass; {@code false}
+     *         otherwise
      */
     public abstract boolean isAllowed(@NotNull OnlineUser sender, @NotNull String message);
 
@@ -76,6 +77,7 @@ public abstract class ChatFilter {
             @PolymorphicTypes.Type(type = SpamFilter.SpamFilterSettings.class, alias = "spam"),
             @PolymorphicTypes.Type(type = RepeatFilter.RepeatFilterSettings.class, alias = "repeat"),
             @PolymorphicTypes.Type(type = RegexFilter.RegexFilterSettings.class, alias = "regex"),
+            @PolymorphicTypes.Type(type = AsciiFilter.AsciiFilterSettings.class, alias = "ascii"),
             @PolymorphicTypes.Type(type = EmojiReplacer.EmojiReplacerSettings.class, alias = "emoji"),
     })
     @NoArgsConstructor(access = AccessLevel.PACKAGE)
@@ -111,7 +113,8 @@ public abstract class ChatFilter {
     }
 
     /**
-     * A special kind of {@link ChatFilter} that can modify the contents of a message
+     * A special kind of {@link ChatFilter} that can modify the contents of a
+     * message
      */
     public abstract static class ReplacerFilter extends ChatFilter {
 

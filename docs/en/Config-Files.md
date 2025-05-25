@@ -134,7 +134,7 @@ discord:
     send_channel_map:
       '123456789012345678': global
 # Custom names to display wherever you use the "%server%" placeholder instead of their default name
-server_name_replacement: 
+server_name_replacement:
   very-long-server-name: VLSN
 ```
 </details>
@@ -239,8 +239,8 @@ filters:
     private_messages: true
     broadcast_messages: false
   ASCII:
-    type: filter
-    enabled: true
+    type: ascii
+    enabled: false  # Disabled by default to support Unicode characters
     channels:
       - global
       - local
@@ -274,7 +274,7 @@ filters:
       - local
     private_messages: true
     broadcast_messages: false
-    previous_messages_to_check: 5
+    previous_messages_to_check: 2  # Reduced to minimize false positives
   SPAM:
     type: spam
     enabled: true

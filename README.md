@@ -57,6 +57,8 @@ It's designed to be easy to configure with an elegant out-of-box setup, while al
 
 **🚀 Better Extensibility** &mdash; Plugin-based design supporting custom extensions and integrations
 
+**🚀 Chinese Character Support** &mdash; Default support for Chinese and other Unicode characters with optimized filter settings
+
 ## Features
 **⭐ Works great out of the box** &mdash; Install on your Spigot server or Velocity/BungeeCord-based proxy and use right away
 
@@ -188,6 +190,7 @@ Translations of the plugin locales are welcome to help make the plugin more acce
 - [Example Plugin](docs/en/Example-Plugin.md) &mdash; Complete API usage examples
 - [Channel Configuration](docs/en/Channels.md) &mdash; Channel configuration guide
 - [Command Reference](docs/en/Commands.md) &mdash; Detailed command descriptions
+
 
 ### 🔗 Original Links
 - [Original Documentation](https://william278.net/docs/huskchat/) &mdash; Original plugin documentation

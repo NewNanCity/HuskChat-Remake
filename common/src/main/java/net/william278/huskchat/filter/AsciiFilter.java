@@ -19,6 +19,8 @@
 
 package net.william278.huskchat.filter;
 
+import de.exlll.configlib.Configuration;
+import lombok.Getter;
 import net.william278.huskchat.user.OnlineUser;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +42,20 @@ public class AsciiFilter extends ChatFilter {
 
     @NotNull
     public static FilterSettings getDefaultSettings() {
-        return new FilterSettings();
+        return new AsciiFilterSettings();
+    }
+
+    /**
+     * ASCII过滤器设置类，默认禁用以支持中文字符
+     * ASCII filter settings class, disabled by default to support Chinese
+     * characters
+     */
+    @Getter
+    @Configuration
+    public static class AsciiFilterSettings extends FilterSettings {
+        private AsciiFilterSettings() {
+            this.enabled = false; // 默认禁用ASCII过滤器以支持Unicode字符
+        }
     }
 
     @Override

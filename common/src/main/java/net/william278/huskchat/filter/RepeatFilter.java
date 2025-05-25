@@ -31,12 +31,14 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 /**
- * A {@link ChatFilter} that filters against users sending the same message too many times
+ * A {@link ChatFilter} that filters against users sending the same message too
+ * many times
  */
 public class RepeatFilter extends ChatFilter {
 
     /**
-     * Map of user {@link UUID}s to a queue recording the previous messages the user has sent
+     * Map of user {@link UUID}s to a queue recording the previous messages the user
+     * has sent
      */
     private final HashMap<UUID, LinkedList<String>> userMessageQueues;
 
@@ -61,8 +63,8 @@ public class RepeatFilter extends ChatFilter {
                     return false;
                 }
             }
-            if (userMessageQueues.get(player.getUuid()).size() + 1 >
-                    ((RepeatFilterSettings) settings).getPreviousMessagesToCheck()) {
+            if (userMessageQueues.get(player.getUuid()).size() + 1 > ((RepeatFilterSettings) settings)
+                    .getPreviousMessagesToCheck()) {
                 userMessageQueues.get(player.getUuid()).removeLast();
             }
         }
@@ -82,12 +84,11 @@ public class RepeatFilter extends ChatFilter {
         return "huskchat.ignore_filters.spam";
     }
 
-
     @Getter
     @Configuration
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class RepeatFilterSettings extends FilterSettings {
-        public int previousMessagesToCheck = 5;
+        public int previousMessagesToCheck = 2; // 减少检查数量，避免误拦截
     }
-    
+
 }

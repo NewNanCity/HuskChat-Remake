@@ -1,22 +1,21 @@
-Group Messages are a unique feature of HuskChat that lets you send messages to a group of players, instead of just a single player. This is really useful for parties of players working together on group projects.
+群组消息是 HuskChat 的一项独特功能，允许你向一组玩家发送消息，而不仅仅是单个玩家。这对于一起协作完成项目的玩家团队非常有用。
 
-## Configuring Group Messages
-To enable Group Messages, ensure the `group_messages` feature is enabled in the `message_command` section of the config.yml file. You can also set a maximum number of players that can be included in a group message, to prevent players from messaging the entire server!
-
+## 配置群组消息
+要启用群组消息，请确保在 config.yml 文件的 `message_command` 部分启用了 `group_messages` 功能。你还可以设置群组消息中最多可包含的玩家数量，以防止玩家向全服发送消息！
 
 <details>
   <summary>Config.yml</summary>
 
 ```yaml
-  group_messages: # Whether to allow sending and replying to a message in a group (/msg User1,User2 <message>)
+  group_messages: # 是否允许群组发送和回复消息（/msg 用户1,用户2 <消息>）
     enabled: true
     max_size: 10
 ```
 </details>
 
-## Sending and replying in a group
-To send a group message, simply use the `/msg` command with a list of players to send to, separated by commas. For example, `/msg User1,User2,User3 Hello!` will send the message `Hello!` to `User1`, `User2` and `User3`. The message sent in chat will have a small (`[+N]`) postfixed to the recipient name to indicate how many players are in the group. Hover over the name to see the full list of players in the group, and click the name to paste the full `/msg` command into your chat window.
+## 群组发送与回复
+要发送群组消息，只需使用 `/msg` 命令，并用逗号分隔要发送的玩家列表。例如，`/msg 用户1,用户2,用户3 你好！` 会将消息 `你好！` 发送给 `用户1`、`用户2` 和 `用户3`。聊天中显示的消息会在收件人名称后加上一个小的（`[+N]`）标记，表示群组中有多少玩家。将鼠标悬停在名称上可查看群组内所有玩家列表，点击名称可将完整的 `/msg` 命令粘贴到你的聊天窗口。
 
-The `/r` (reply) command also supports replying to a group message. If you receive a group message from `User1`, `User2` and `User3`, you can reply to all of them by using `/r Hello!`.
+`/r`（回复）命令同样支持回复群组消息。如果你收到来自 `用户1`、`用户2` 和 `用户3` 的群组消息，可以通过 `/r 你好！` 回复所有人。
 
-If you're stuck in a long or spammy chain of /r messages, you can use `/optoutmsg` to silently leave the conversation.
+如果你被困在一条冗长或刷屏的 /r 消息链中，可以使用 `/optoutmsg` 静默退出该会话。

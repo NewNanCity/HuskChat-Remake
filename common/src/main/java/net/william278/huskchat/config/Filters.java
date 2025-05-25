@@ -53,12 +53,10 @@ public class Filters {
             ChatFilter.Type.SPAM, ChatFilter.Type.SPAM.getDefaultSettings(),
             ChatFilter.Type.PROFANITY, ChatFilter.Type.PROFANITY.getDefaultSettings(),
             ChatFilter.Type.ASCII, ChatFilter.Type.ASCII.getDefaultSettings(),
-            ChatFilter.Type.REGEX, ChatFilter.Type.REGEX.getDefaultSettings()
-    ));
+            ChatFilter.Type.REGEX, ChatFilter.Type.REGEX.getDefaultSettings()));
 
     private Map<ChatFilter.Type, ChatFilter.FilterSettings> replacers = new HashMap<>(Map.of(
-            ChatFilter.Type.EMOJI, ChatFilter.Type.EMOJI.getDefaultSettings()
-    ));
+            ChatFilter.Type.EMOJI, ChatFilter.Type.EMOJI.getDefaultSettings()));
 
     public boolean isFilterEnabled(@NotNull ChatFilter.Type type) {
         return filters.get(type).isEnabled();
@@ -67,6 +65,5 @@ public class Filters {
     public boolean isReplacerEnabled(@NotNull ChatFilter.Type type) {
         return replacers.get(type).isEnabled();
     }
-
 
 }
