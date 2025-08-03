@@ -6,7 +6,15 @@
 - 📄 `channels.yml`：聊天[[频道]]配置
 - 📄 `filters.yml`：聊天[[过滤器与替换器]]配置
 - 📄 `user_cache.yml`：当前处于[[社交与本地监听]]模式下的用户缓存（此文件自动生成，无需手动编辑）
-- 📄 `messages-xx-xx.yml`：插件语言文件，采用 MineDown 格式（详见[[翻译]]）
+- 📄 `messages-xx-xx.yml`：插件语言文件，支持 MineDown 和 MiniMessage 格式（详见[[翻译]]）
+
+## 新功能：MiniMessage 支持
+
+HuskChat-Remake 现在支持两种文本格式化系统：
+- **MineDown**：传统的 MarkDown 风格格式化（默认，向后兼容）
+- **MiniMessage**：现代的标签风格格式化（Adventure 官方推荐）
+
+详细使用说明请参考：[MiniMessage 支持示例配置](MiniMessage-Example-Config.md)
 
 ## 示例文件
 <details>

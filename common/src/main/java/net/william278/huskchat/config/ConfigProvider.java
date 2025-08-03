@@ -174,7 +174,9 @@ public interface ConfigProvider {
         // Read existing locales if present
         final Path path = getConfigDirectory().resolve(String.format("messages-%s.yml", getSettings().getLanguage()));
         if (Files.exists(path)) {
-            setLocales(store.load(path));
+            final Locales locales = store.load(path);
+            locales.initializeFormatters(getPlugin());
+            setLocales(locales);
             return;
         }
 
@@ -182,6 +184,7 @@ public interface ConfigProvider {
         try (InputStream input = getResource(String.format("locales/%s.yml", getSettings().getLanguage()))) {
             final Locales locales = store.read(input);
             store.save(locales, path);
+            locales.initializeFormatters(getPlugin());
             setLocales(locales);
         } catch (Throwable e) {
             getPlugin().log(Level.SEVERE, "An error occurred loading the locales (invalid lang code?)", e);

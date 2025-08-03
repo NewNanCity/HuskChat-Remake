@@ -25,6 +25,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.william278.huskchat.HuskChat;
 import net.william278.huskchat.config.Settings;
+import net.william278.huskchat.formatter.TextFormatter;
+import net.william278.huskchat.formatter.TextFormatterFactory;
 import net.william278.huskchat.user.OnlineUser;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,9 +78,13 @@ public class BroadcastMessage {
     }
 
     public void sendMessage(@NotNull OnlineUser player) {
+        final TextFormatter systemFormatter = TextFormatterFactory.getFormatter(
+                plugin.getSettings().getTextFormatting().getDefaultFormat());
+        final TextFormatter userFormatter = systemFormatter.withAdvancedFormattingDisabled();
+
         final TextComponent.Builder componentBuilder = Component.text();
-        componentBuilder.append(new MineDown(plugin.getSettings().getBroadcastCommand().getFormat()).toComponent());
-        componentBuilder.append(new MineDown(message).disable(MineDownParser.Option.ADVANCED_FORMATTING).toComponent());
+        componentBuilder.append(systemFormatter.parse(plugin.getSettings().getBroadcastCommand().getFormat()));
+        componentBuilder.append(userFormatter.parse(message));
         player.sendMessage(componentBuilder.build());
     }
 

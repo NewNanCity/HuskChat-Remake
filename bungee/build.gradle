@@ -8,6 +8,7 @@ dependencies {
     compileOnly 'commons-io:commons-io:2.16.1'
     compileOnly 'net.alpenblock:BungeePerms:4.0-dev-143'
     compileOnly 'de.themoep:minedown-adventure:1.7.3-SNAPSHOT'
+    compileOnly 'net.kyori:adventure-text-minimessage:4.17.0'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     compileOnly 'org.projectlombok:lombok:1.18.34'
 
@@ -18,6 +19,7 @@ shadowJar {
     relocate 'net.william278.profanitycheckerapi', 'net.william278.huskchat.libraries.profanitycheckerapi'
     relocate 'net.william278.desertwell', 'net.william278.huskchat.libraries.desertwell'
     relocate 'de.themoep', 'net.william278.huskchat.libraries'
+    relocate 'net.kyori.adventure.text.minimessage', 'net.william278.huskchat.libraries.minimessage'
     relocate 'dev.vankka', 'net.william278.huskchat.libraries'
     relocate 'de.exlll', 'net.william278.huskchat.libraries'
     relocate 'org.snakeyaml.engine', 'net.william278.huskchat.libraries.snakeyaml.engine'

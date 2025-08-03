@@ -30,6 +30,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.huskchat.HuskChat;
 import net.william278.huskchat.channel.Channel;
+import net.william278.huskchat.formatter.TextFormatter;
+import net.william278.huskchat.formatter.TextFormatterFactory;
 import net.william278.huskchat.user.OnlineUser;
 import net.william278.huskchat.user.UserCache;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +65,41 @@ public class Locales {
     // The raw set of locales loaded from yaml
     Map<String, String> locales = new TreeMap<>();
 
+    // Text formatter for parsing locale strings
+    private transient TextFormatter defaultFormatter;
+    private transient TextFormatter userFormatter;
+
+    /**
+     * 初始化文本格式化器
+     *
+     * @param plugin HuskChat插件实例
+     */
+    public void initializeFormatters(@NotNull HuskChat plugin) {
+        final String formatType = plugin.getSettings().getTextFormatting().getDefaultFormat();
+        this.defaultFormatter = TextFormatterFactory.getFormatter(formatType);
+        this.userFormatter = this.defaultFormatter.withAdvancedFormattingDisabled();
+    }
+
+    /**
+     * 获取用户消息的格式化器（禁用高级格式化）
+     *
+     * @return 用户消息格式化器
+     */
+    @NotNull
+    private TextFormatter getUserFormatter() {
+        return userFormatter != null ? userFormatter : TextFormatterFactory.getFormatter("minedown", false);
+    }
+
+    /**
+     * 获取系统消息的格式化器（启用所有功能）
+     *
+     * @return 系统消息格式化器
+     */
+    @NotNull
+    private TextFormatter getSystemFormatter() {
+        return defaultFormatter != null ? defaultFormatter : TextFormatterFactory.getFormatter("minedown");
+    }
+
     @Nullable
     public String getRawLocale(@NotNull String id) {
         return locales.get(id);
@@ -84,18 +121,17 @@ public class Locales {
             replacementIndexer = replacementIndexer + 1;
         }
 
-        player.sendMessage(new MineDown(locale));
+        // Use the system formatter for locale messages
+        player.sendMessage(getSystemFormatter().parse(locale));
     }
 
     public void sendChannelMessage(@NotNull OnlineUser target, @NotNull OnlineUser sender, @NotNull Channel channel,
                                    @NotNull String message, @NotNull HuskChat plugin) {
         plugin.replacePlaceholders(sender, channel.getFormat()).thenAccept(replaced -> {
-            final Component format = new MineDown(replaced).toComponent();
+            final Component format = getSystemFormatter().parse(replaced);
             final TextComponent.Builder builder = Component.text().append(format);
             if (sender.hasPermission(FORMATTED_CHAT_PERMISSION, false)) {
-                builder.append(new MineDown(message)
-                        .disable(MineDownParser.Option.ADVANCED_FORMATTING)
-                        .toComponent().color(getFormatColor(format)));
+                builder.append(getUserFormatter().parse(message).color(getFormatColor(format)));
             } else {
                 builder.append(Component.text(message).color(getFormatColor(format)));
             }
@@ -113,15 +149,14 @@ public class Locales {
                 replaced = replaced.replace("%group_amount_subscript%", superscriptNumber(recipients.size() - 1))
                         .replace("%group_amount%", Integer.toString(recipients.size() - 1))
                         .replace("%group_members_comma_separated%", getGroupMemberList(recipients, ","))
-                        .replace("%group_members%", MineDown.escape(getGroupMemberList(recipients, "\n")));
+                        .replace("%group_members%", getSystemFormatter().escape(getGroupMemberList(recipients, "\n")));
             }
 
             final TextComponent.Builder builder = Component.text();
-            final Component format = new MineDown(replaced).toComponent();
+            final Component format = getSystemFormatter().parse(replaced);
             builder.append(format);
             if (sender.hasPermission(FORMATTED_CHAT_PERMISSION, false)) {
-                builder.append(new MineDown(message).disable(MineDownParser.Option.ADVANCED_FORMATTING)
-                        .toComponent().color(getFormatColor(format)));
+                builder.append(getUserFormatter().parse(message).color(getFormatColor(format)));
             } else {
                 builder.append(Component.text(message).color(getFormatColor(format)));
             }
@@ -157,15 +192,14 @@ public class Locales {
                 replaced = replaced.replace("%group_amount_subscript%", superscriptNumber(recipients.size() - 1))
                         .replace("%group_amount%", Integer.toString(recipients.size() - 1))
                         .replace("%group_members_comma_separated%", getGroupMemberList(recipients, ","))
-                        .replace("%group_members%", MineDown.escape(getGroupMemberList(recipients, "\n")));
+                        .replace("%group_members%", getSystemFormatter().escape(getGroupMemberList(recipients, "\n")));
             }
 
             final TextComponent.Builder builder = Component.text();
-            final Component format = new MineDown(replaced).toComponent();
+            final Component format = getSystemFormatter().parse(replaced);
             builder.append(format);
             if (sender.hasPermission(FORMATTED_CHAT_PERMISSION, false)) {
-                builder.append(new MineDown(message).disable(MineDownParser.Option.ADVANCED_FORMATTING)
-                        .toComponent().color(getFormatColor(format)));
+                builder.append(getUserFormatter().parse(message).color(getFormatColor(format)));
             } else {
                 builder.append(Component.text(message).color(getFormatColor(format)));
             }
@@ -180,10 +214,10 @@ public class Locales {
                              @NotNull Channel channel, @NotNull String message, @NotNull HuskChat plugin) {
         plugin.replacePlaceholders(sender, plugin.getSettings().getLocalSpy().getFormat())
                 .thenAccept(replaced -> {
+                    final String formattedMessage = replaced.replace("%spy_color%", spyColor.colorCode)
+                            .replace("%channel%", channel.getId()) + getSystemFormatter().escape(message);
                     final TextComponent.Builder componentBuilder = Component.text()
-                            .append(new MineDown(replaced.replace("%spy_color%", spyColor.colorCode)
-                                    .replace("%channel%", channel.getId()) +
-                                    MineDown.escape(message)).toComponent());
+                            .append(getSystemFormatter().parse(formattedMessage));
                     spy.sendMessage(componentBuilder.build());
                 });
     }
@@ -201,11 +235,10 @@ public class Locales {
                 replaced = replaced.replace("%group_amount_subscript%", superscriptNumber(receivers.size() - 1))
                         .replace("%group_amount%", Integer.toString(receivers.size() - 1))
                         .replace("%group_members_comma_separated%", getGroupMemberList(receivers, ","))
-                        .replace("%group_members%", MineDown.escape(getGroupMemberList(receivers, "\n")));
+                        .replace("%group_members%", getSystemFormatter().escape(getGroupMemberList(receivers, "\n")));
             }
-            spy.sendMessage(new MineDown(
-                    replaced.replace("%spy_color%", spyColor.colorCode) + MineDown.escape(message)
-            ));
+            final String formattedMessage = replaced.replace("%spy_color%", spyColor.colorCode) + getSystemFormatter().escape(message);
+            spy.sendMessage(getSystemFormatter().parse(formattedMessage));
         }));
     }
 
@@ -216,7 +249,7 @@ public class Locales {
         plugin.replacePlaceholders(player,
                         plugin.getDataGetter().getTextFromNode(player, "huskchat.join_message")
                                 .orElse(plugin.getSettings().getJoinAndQuitMessages().getJoin().getFormat()))
-                .thenAccept(replaced -> sendJoinQuitMessage(player, new MineDown(replaced).toComponent(), plugin));
+                .thenAccept(replaced -> sendJoinQuitMessage(player, getSystemFormatter().parse(replaced), plugin));
     }
 
     public void sendQuitMessage(@NotNull OnlineUser player, @NotNull HuskChat plugin) {
@@ -226,7 +259,7 @@ public class Locales {
         plugin.replacePlaceholders(player,
                         plugin.getDataGetter().getTextFromNode(player, "huskchat.quit_message")
                                 .orElse(plugin.getSettings().getJoinAndQuitMessages().getQuit().getFormat()))
-                .thenAccept(replaced -> sendJoinQuitMessage(player, new MineDown(replaced).toComponent(), plugin));
+                .thenAccept(replaced -> sendJoinQuitMessage(player, getSystemFormatter().parse(replaced), plugin));
     }
 
     // Dispatch a join/quit message to the correct server

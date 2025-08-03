@@ -77,6 +77,23 @@ public class Settings {
         private long cacheTime = 3000;
     }
 
+    @Comment("Text formatting settings")
+    private TextFormattingSettings textFormatting = new TextFormattingSettings();
+
+    @Getter
+    @Configuration
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class TextFormattingSettings {
+        @Comment("Default text format type. Options: 'minedown' (default), 'minimessage'")
+        private String defaultFormat = "minedown";
+
+        @Comment("Whether to enable strict parsing mode (more error checking)")
+        private boolean strictMode = false;
+
+        @Comment("Whether to show parse errors to users when formatting fails")
+        private boolean showParseErrors = false;
+    }
+
     @Comment("Message comamnd settings")
     private MessageSettings messageCommand = new MessageSettings();
 
